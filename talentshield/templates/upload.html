@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentShield - Upload Resumes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <style>
+        /* Include existing styles */
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #0A1128;
+            --secondary-color: #001F54;
+            --accent-color: #034078;
+            --accent-glow: #1282A2;
+            --text-color: #FEFCFB;
+            --background-color: #030B1B;
+            --card-bg: rgba(1, 22, 39, 0.95);
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --header-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--background-color);
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-color);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            width: var(--sidebar-width);
+            padding: var(--header-height) 24px 40px;
+            position: fixed;
+            height: 100%;
+            left: -280px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-right: 1px solid rgba(18, 130, 162, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar:hover,
+        .sidebar.active {
+            left: 0;
+        }
+
+        .logo {
+            color: var(--text-color);
+            font-size: 28px;
+            font-weight: 700;
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: var(--sidebar-width);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            z-index: 1001;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(18, 130, 162, 0.2);
+            text-shadow: 0 0 15px var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar:hover .logo,
+        .sidebar.active .logo {
+            left: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            right: -16px;
+            top: calc(var(--header-height) + 20px);
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.5);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--accent-glow);
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.8);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 16px 20px;
+            margin: 4px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(18, 130, 162, 0.1);
+            border: 1px solid rgba(18, 130, 162, 0.2);
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.2);
+        }
+
+        .nav-item i {
+            margin-right: 16px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: var(--header-height) 40px 40px;
+            min-height: 100vh;
+            background: var(--background-color);
+            position: relative;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar:hover + .main-content,
+        .main-content.expanded {
+            margin-left: var(--sidebar-width);
+        }
+
+        .upload-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid rgba(18, 130, 162, 0.2);
+        }
+
+        .upload-header {
+            margin-bottom: 32px;
+        }
+
+        .upload-header h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #FEFCFB, #1282A2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(18, 130, 162, 0.4);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 24px;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--accent-glow);
+            background: rgba(18, 130, 162, 0.1);
+        }
+
+        .drop-zone i {
+            font-size: 48px;
+            color: var(--accent-glow);
+            margin-bottom: 16px;
+        }
+
+        .drop-zone p {
+            margin: 8px 0;
+            color: rgba(254, 252, 251, 0.8);
+        }
+
+        .file-list {
+            margin-top: 24px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(1, 22, 39, 0.8);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .file-item i {
+            margin-right: 12px;
+            color: var(--accent-glow);
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--accent-glow);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .remove-btn:hover {
+            color: #ff4d4d;
+        }
+
+        .upload-button {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-glow));
+            color: var(--text-color);
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-button:hover {
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.4);
+        }
+
+        .view-pdf-button {
+            background: var(--accent-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .view-pdf-button:hover {
+            background: var(--accent-glow);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">TalentShield</div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <nav>
+            <a href="candidate.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span class="nav-text">Candidate Dashboard</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-cube"></i>
+                <span class="nav-text">Profile</span>
+            </a>
+            <a href="upload.html" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span class="nav-text">Upload</span>
+            </a>
+            <a href="login.html" class="nav-item">
+                <i class="fas fa-folder"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="upload-container">
+            <div class="upload-header">
+                <h1>Upload Resumes</h1>
+                <p>Drag and drop PDF files or click to select</p>
+            </div>
+            <div class="drop-zone" onclick="document.getElementById('file-input').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Drop files here or click to browse</p>
+                <p class="small">Supported format: PDF</p>
+                <input type="file" id="file-input" hidden accept=".pdf">
+            </div>
+            <div class="file-list" id="file-list">
+                <!-- Files will be listed here -->
+            </div>
+            <button class="upload-button" id="process-button">Process Files</button>
+        </div>
+    </div>
+
+    <script>
+        class ResumeAnalyzer {
+            constructor() {
+                // Industry-specific keywords
+                this.industryKeywords = {
+                    software: [
+                        'software', 'development', 'programming', 'code', 
+                        'developer', 'engineer', 'python', 'javascript', 
+                        'react', 'node.js', 'api', 'database', 
+                        'agile', 'cloud', 'backend', 'frontend', 
+                        'full-stack', 'microservices', 'ci/cd'
+                    ],
+                    marketing: [
+                        'marketing', 'digital', 'social media', 'content', 
+                        'strategy', 'campaign', 'seo', 'analytics', 
+                        'brand', 'communication', 'promotion', 'advertising'
+                    ],
+                    design: [
+                        'design', 'ui', 'ux', 'graphic', 'creative', 
+                        'adobe', 'figma', 'prototype', 'visual', 
+                        'branding', 'typography', 'illustration'
+                    ],
+                    general: [
+                        'leadership', 'communication', 'teamwork', 
+                        'problem-solving', 'time management', 
+                        'organization', 'adaptability', 'innovation'
+                    ]
+                };
+            }
+        
+            // Identify keywords relevant to a specific position
+            getPositionKeywords(position) {
+                const positionLower = position.toLowerCase();
+                let keywords = [...this.industryKeywords.general];
+        
+                // Software-related positions
+                if (positionLower.includes('software') || 
+                    positionLower.includes('developer') || 
+                    positionLower.includes('engineer')) {
+                    keywords = [...keywords, ...this.industryKeywords.software];
+                }
+                
+                // Marketing-related positions
+                if (positionLower.includes('marketing') || 
+                    positionLower.includes('digital') || 
+                    positionLower.includes('brand')) {
+                    keywords = [...keywords, ...this.industryKeywords.marketing];
+                }
+                
+                // Design-related positions
+                if (positionLower.includes('design') || 
+                    positionLower.includes('ui') || 
+                    positionLower.includes('ux')) {
+                    keywords = [...keywords, ...this.industryKeywords.design];
+                }
+        
+                // Remove duplicates
+                return [...new Set(keywords)];
+            }
+        
+            // Analyze resume text
+            analyzeResume(resumeText, position) {
+                // Validate inputs
+                if (!resumeText || !position) {
+                    return this.generateFallbackReport(position);
+                }
+        
+                const resumeLower = resumeText.toLowerCase();
+                const positionKeywords = this.getPositionKeywords(position);
+        
+                // Match keywords
+                const matchedKeywords = positionKeywords.filter(keyword => 
+                    resumeLower.includes(keyword.toLowerCase())
+                );
+        
+                // Calculate score
+                const keywordMatchScore = (matchedKeywords.length / positionKeywords.length) * 100;
+                const score = Math.round(Math.max(40, Math.min(keywordMatchScore, 95)));
+        
+                // Identify missing keywords
+                const missingKeywords = positionKeywords.filter(k => 
+                    !matchedKeywords.includes(k)
+                ).slice(0, 10);  // Limit to top 10 missing keywords
+        
+                // Generate feedback
+                const feedback = this.generateFeedback(score, matchedKeywords, positionKeywords);
+        
+                return {
+                    score: score,
+                    feedback: feedback,
+                    keywordMatches: matchedKeywords,
+                    missingKeywords: missingKeywords,
+                    improvedContent: this.generateImprovementSuggestions(position, resumeText, missingKeywords)
+                };
+            }
+        
+            // Generate feedback based on score
+            generateFeedback(score, matchedKeywords, allKeywords) {
+                let feedback = `Your resume shows a ${score}% match for the position. `;
+                
+                if (score >= 80) {
+                    feedback += "Excellent keyword alignment! Your resume strongly reflects the job requirements.";
+                } else if (score >= 60) {
+                    feedback += "Good keyword coverage, but there's room for improvement.";
+                } else {
+                    feedback += "Significant opportunities to better align your resume with the job description.";
+                }
+        
+                feedback += ` You matched ${matchedKeywords.length} out of ${allKeywords.length} key terms.`;
+                return feedback;
+            }
+        
+            // Generate improvement suggestions
+            generateImprovementSuggestions(position, resumeText, missingKeywords) {
+                const suggestions = [
+                    `Tailor your resume more specifically to the ${position} role.`,
+                    "Use more industry-specific terminology.",
+                    "Highlight achievements with quantifiable metrics.",
+                    "Ensure your most relevant skills are prominently displayed."
+                ];
+        
+                if (missingKeywords.length > 0) {
+                    suggestions.push(`Consider incorporating keywords like: ${missingKeywords.slice(0, 5).join(', ')}.`);
+                }
+        
+                if (resumeText.length < 1500) {
+                    suggestions.push("Your resume appears brief. Consider adding more detailed information about your experiences and skills.");
+                }
+        
+                return suggestions.join(" ");
+            }
+        
+            // Fallback method for when analysis can't be performed
+            generateFallbackReport(position) {
+                return {
+                    score: 50,
+                    feedback: `Unable to perform detailed analysis for ${position || 'the position'}.`,
+                    keywordMatches: [],
+                    missingKeywords: [
+                        "Comprehensive Analysis",
+                        "Keyword Matching",
+                        "Content Evaluation"
+                    ],
+                    improvedContent: `Analysis could not be completed. 
+        Possible reasons:
+        - Resume text extraction failed
+        - Insufficient resume content
+        - Unrecognized position
+        
+        Recommendations:
+        - Ensure resume is a clear, text-based PDF
+        - Double-check file upload
+        - Provide a more specific job position`
+                };
+            }
+        }
+        
+        // Function to use the analyzer
+        async function getATSScore(resumeDataUrl, position) {
+            try {
+                // Extract text from PDF using PDF.js
+                const resumeText = await extractTextFromPDF(resumeDataUrl);
+                
+                // Create analyzer and analyze resume
+                const analyzer = new ResumeAnalyzer();
+                const result = analyzer.analyzeResume(resumeText, position);
+                
+                return result;
+            } catch (error) {
+                console.error("Resume analysis error:", error);
+                
+                // Create fallback analyzer for error case
+                const fallbackAnalyzer = new ResumeAnalyzer();
+                return fallbackAnalyzer.generateFallbackReport(position);
+            }
+        }
+        
+        // PDF text extraction function (assumes PDF.js is available)
+        async function extractTextFromPDF(dataUrl) {
+            return new Promise((resolve, reject) => {
+                if (!pdfjsLib) {
+                    reject(new Error("PDF.js library not loaded"));
+                    return;
+                }
+        
+                const loadingTask = pdfjsLib.getDocument(dataUrl);
+                
+                loadingTask.promise.then(async (pdf) => {
+                    let fullText = '';
+                    
+                    // Check if PDF has pages
+                    if (pdf.numPages === 0) {
+                        reject(new Error("No pages found in the PDF"));
+                        return;
+                    }
+                    
+                    // Extract text from all pages
+                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        const textContent = await page.getTextContent();
+                        
+                        // Concatenate text from the page
+                        const pageText = textContent.items.map(item => item.str).join(' ');
+                        fullText += pageText + '\n';
+                    }
+                    
+                    // Validate extracted text
+                    if (fullText.trim().length < 10) {
+                        reject(new Error("Extracted text is too short or empty"));
+                        return;
+                    }
+                    
+                    resolve(fullText);
+                }).catch(error => {
+                    console.error("PDF parsing error:", error);
+                    reject(error);
+                });
+            });
+        }
+        // Sidebar toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('expanded');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            const dropZone = document.querySelector('.drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const fileList = document.getElementById('file-list');
+            const processButton = document.getElementById('process-button');
+            
+            // Initialize storage for uploaded files
+            window.uploadedFiles = {};
+            
+            // Initialize localStorage if not already set
+            if (!localStorage.getItem('resumeUploads')) {
+                localStorage.setItem('resumeUploads', JSON.stringify([]));
+            }
+            
+            // Handle drag and drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--accent-glow)';
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '';
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+            
+            // Handle file selection
+            function handleFiles(files) {
+                Array.from(files).forEach(file => {
+                    if (file.type === 'application/pdf') {
+                        // Read file as data URL first
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // Store file and its data URL temporarily
+                            window.uploadedFiles[file.name] = {
+                                file: file,
+                                dataUrl: e.target.result
+                            };
+                            
+                            // Add to displayed list
+                            const fileItem = document.createElement('div');
+                            fileItem.className = 'file-item';
+                            fileItem.innerHTML = `
+                                <div>
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>${file.name}</span>
+                                </div>
+                                <div>
+                                    <button class="view-pdf-button" onclick="viewPdf('${file.name}')">Preview</button>
+                                    <button class="remove-btn" onclick="removeFile(this, '${file.name}')">×</button>
+                                </div>
+                            `;
+                            fileList.appendChild(fileItem);
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        alert('Only PDF files are allowed.');
+                    }
+                });
+            }
+            
+            // Function to preview PDF
+            window.viewPdf = function(fileName) {
+                const fileData = window.uploadedFiles[fileName];
+                if (fileData && fileData.dataUrl) {
+                    window.open(fileData.dataUrl, '_blank');
+                }
+            };
+            
+            // Function to remove a file from the list
+            window.removeFile = function(button, fileName) {
+                const fileItem = button.closest('.file-item');
+                fileList.removeChild(fileItem);
+                
+                // Remove from temporary storage
+                if (window.uploadedFiles[fileName]) {
+                    delete window.uploadedFiles[fileName];
+                }
+            };
+            
+           // Modify your process button click handler to include ATS scoring
+processButton.addEventListener('click', async function() {
+    const fileNames = Object.keys(window.uploadedFiles);
+    
+    if (fileNames.length === 0) {
+        alert('Please select at least one file to upload.');
+        return;
+    }
+    
+    // Show loading state
+    processButton.disabled = true;
+    processButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    try {
+        // Process each file
+        // Ask for position once before looping through files
+         const position = prompt("What position are you applying for?", "");
+
+        if (!position) {
+            alert("Position is required to continue.");
+            return;
+    }
+
+    for (const fileName of fileNames) {
+         const fileData = window.uploadedFiles[fileName];
+
+        if (fileData) {
+            console.log(`Processing ${fileName} for position: ${position}`);
+
+                
+                // Show analyzing message
+                const processingMessage = document.createElement('div');
+                processingMessage.id = 'processing-message';
+                processingMessage.style.marginTop = '20px';
+                processingMessage.style.textAlign = 'center';
+                processingMessage.innerHTML = `
+                    <i class="fas fa-cog fa-spin" style="color: var(--accent-glow); font-size: 24px; margin-bottom: 10px;"></i>
+                    <p>Analyzing resume for ${position} position...</p>
+                `;
+                document.querySelector('.upload-container').appendChild(processingMessage);
+                
+                try {
+                    // Get ATS score using Claude API
+                    const atsResult = await getATSScore(fileData.dataUrl, position);
+                    
+                    // Create resume object with ATS score
+                    const resume = {
+                        id: Date.now(),
+                        fileName: fileName,
+                        fileSize: fileData.file.size,
+                        fileType: fileData.file.type,
+                        uploadDate: new Date().toISOString(),
+                        position: position,
+                        status: 'pending',
+                        dataUrl: fileData.dataUrl,
+                        atsScore: atsResult.score,
+                        atsFeedback: atsResult
+                    };
+                    
+                    // Get uploads from localStorage
+                    const uploads = JSON.parse(localStorage.getItem('resumeUploads') || '[]');
+                    
+                    // Add new upload
+                    uploads.push(resume);
+                    
+                    // Save back to localStorage
+                    localStorage.setItem('resumeUploads', JSON.stringify(uploads));
+                    
+                    // Remove processing message
+                    document.getElementById('processing-message').remove();
+                    
+                    // Show ATS score modal
+                    showATSScoreModal(atsResult);
+                } catch (error) {
+                    console.error('Error analyzing resume:', error);
+                    
+                    // Remove processing message if it exists
+                    const processingMessage = document.getElementById('processing-message');
+                    if (processingMessage) {
+                        processingMessage.remove();
+                    }
+                    
+                    // Still save the resume but without ATS score
+                    const resume = {
+                        id: Date.now(),
+                        fileName: fileName,
+                        fileSize: fileData.file.size,
+                        fileType: fileData.file.type,
+                        uploadDate: new Date().toISOString(),
+                        position: position,
+                        status: 'pending',
+                        dataUrl: fileData.dataUrl
+                    };
+                    
+                    // Get uploads from localStorage
+                    const uploads = JSON.parse(localStorage.getItem('resumeUploads') || '[]');
+                    
+                    // Add new upload
+                    uploads.push(resume);
+                    
+                    // Save back to localStorage
+                    localStorage.setItem('resumeUploads', JSON.stringify(uploads));
+                    
+                    alert(`Error analyzing resume: ${error.message}. Resume uploaded without ATS analysis.`);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error processing files:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        // Reset button
+        processButton.disabled = false;
+        processButton.innerHTML = 'Process Files';
+        
+        // Clear the file list and temporary storage
+        fileList.innerHTML = '';
+        window.uploadedFiles = {};
+        fileInput.value = '';
+        
+        // Display uploaded files
+        displayUploadedFiles();
+    }
+});
+            // Function to display uploaded files
+            function displayUploadedFiles() {
+                // Get or create the uploaded files section
+                let uploadedSection = document.getElementById('uploaded-files-section');
+                if (!uploadedSection) {
+                    uploadedSection = document.createElement('div');
+                    uploadedSection.id = 'uploaded-files-section';
+                    uploadedSection.style.marginTop = '30px';
+                    uploadedSection.innerHTML = `
+                        <h3 style="margin-bottom: 15px; color: var(--accent-glow);">Your Uploaded Resumes</h3>
+                        <div id="uploaded-files-list"></div>
+                    `;
+                    document.querySelector('.upload-container').appendChild(uploadedSection);
+                }
+                
+                // Get the uploaded files list
+                const uploadedList = document.getElementById('uploaded-files-list');
+                
+                // Get uploads from localStorage
+                const uploads = JSON.parse(localStorage.getItem('resumeUploads') || '[]');
+                
+                // Clear the list
+                uploadedList.innerHTML = '';
+                
+                if (uploads.length === 0) {
+                    uploadedList.innerHTML = '<p>You have not uploaded any resumes yet.</p>';
+                    return;
+                }
+                
+                // Add each upload to the list
+                uploads.forEach(upload => {
+                    // Status styling
+                    let statusColor = '#6c757d';
+                    let statusText = 'Pending';
+                    
+                    if (upload.status === 'approved') {
+                        statusColor = '#28a745';
+                        statusText = 'Approved';
+                    } else if (upload.status === 'rejected') {
+                        statusColor = '#dc3545';
+                        statusText = 'Rejected';
+                    }
+                    
+                    // Format date
+                    const date = new Date(upload.uploadDate);
+                    const formattedDate = date.toLocaleDateString();
+                    
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.style.marginBottom = '10px';
+                    fileItem.innerHTML = `
+                        <div>
+                            <i class="fas fa-file-pdf"></i>
+                            <span>${upload.fileName}</span>
+                            <div style="margin-top: 5px; font-size: 0.8em; color: rgba(255,255,255,0.7);">
+                                <span>Position: ${upload.position}</span> | 
+                                <span>Uploaded: ${formattedDate}</span> | 
+                                <span style="padding: 2px 8px; border-radius: 10px; background-color: ${statusColor};">${statusText}</span>
+                            </div>
+                        </div>
+                        <div>
+                           
+                            <button class="remove-btn" data-id="${upload.id}">×</button>
+                        </div>
+                    `;
+                    
+                    uploadedList.appendChild(fileItem);
+                });
+                
+                // Add view handlers
+                document.querySelectorAll('#uploaded-files-list .view-pdf-button').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        
+                        // Find the upload
+                        const uploads = JSON.parse(localStorage.getItem('resumeUploads') || '[]');
+                        const upload = uploads.find(u => u.id == id);
+                        
+                        if (upload && upload.dataUrl) {
+                            // Open in new tab
+                            window.open(upload.dataUrl, '_blank');
+                        } else {
+                            alert('PDF preview not available');
+                        }
+                    });
+                });
+                
+                // Add delete handlers
+                document.querySelectorAll('#uploaded-files-list .remove-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        
+                        // Confirm deletion
+                        if (confirm('Are you sure you want to delete this resume?')) {
+                            // Filter out the item from localStorage
+                            const uploads = JSON.parse(localStorage.getItem('resumeUploads') || '[]');
+                            const filteredUploads = uploads.filter(u => u.id != id);
+                            localStorage.setItem('resumeUploads', JSON.stringify(filteredUploads));
+                            
+                            // Refresh the display
+                            displayUploadedFiles();
+                        }
+                    });
+                });
+            }
+            
+            // Display uploaded files on page load
+            displayUploadedFiles();
+        });
+    </script>
+    <!-- ATS Score Modal -->
+<div id="ats-score-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="background: var(--card-bg); border-radius: 16px; width: 90%; max-width: 600px; padding: 30px; border: 1px solid var(--accent-color); box-shadow: 0 0 20px rgba(18, 130, 162, 0.5);">
+        <h2 style="color: var(--accent-glow); margin-bottom: 20px; display: flex; align-items: center;">
+            <i class="fas fa-chart-bar" style="margin-right: 12px;"></i>
+            Resume ATS Score
+        </h2>
+        
+        <div class="ats-score-display" style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+            <div id="score-circle" style="width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--accent-glow) 0%, #3a3a3a 0%); display: flex; align-items: center; justify-content: center; position: relative;">
+                <div style="width: 110px; height: 110px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                    <span id="score-value" style="font-size: 32px; font-weight: bold; color: var(--text-color);">0</span>
+                    <span style="font-size: 14px; color: var(--text-color);">Match Score</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ats-feedback">
+            <h3 style="color: var(--accent-glow); margin-bottom: 10px; font-size: 18px;">Analysis Feedback</h3>
+            <p id="feedback-text" style="margin-bottom: 20px; line-height: 1.5;"></p>
+            
+            <div class="feedback-section">
+                <h4 style="color: var(--accent-glow); margin-bottom: 8px; font-size: 16px;">
+                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+                    Matched Keywords
+                </h4>
+                <div id="matched-keywords" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
+            </div>
+            
+            <div class="feedback-section">
+                <h4 style="color: var(--accent-glow); margin-bottom: 8px; font-size: 16px;">
+                    <i class="fas fa-times-circle" style="margin-right: 8px;"></i>
+                    Missing Keywords
+                </h4>
+                <div id="missing-keywords" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
+            </div>
+            
+            <div class="feedback-section">
+                <h4 style="color: var(--accent-glow); margin-bottom: 8px; font-size: 16px;">
+                    <i class="fas fa-lightbulb" style="margin-right: 8px;"></i>
+                    Improvement Suggestions
+                </h4>
+                <p id="improvement-suggestions" style="margin-bottom: 20px; line-height: 1.5;"></p>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end;">
+            <button id="close-ats-modal" style="background: var(--accent-color); color: var(--text-color); padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">Close</button>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+<script>
+    // Add this function to show the ATS score modal
+    function showATSScoreModal(scoreData) {
+        const modal = document.getElementById('ats-score-modal');
+        const scoreValue = document.getElementById('score-value');
+        const scoreCircle = document.getElementById('score-circle');
+        const feedbackText = document.getElementById('feedback-text');
+        const matchedKeywords = document.getElementById('matched-keywords');
+        const missingKeywords = document.getElementById('missing-keywords');
+        const improvementSuggestions = document.getElementById('improvement-suggestions');
+        
+        // Set score and update circle
+        scoreValue.textContent = scoreData.score;
+        scoreCircle.style.background = `conic-gradient(var(--accent-glow) ${scoreData.score}%, #3a3a3a ${scoreData.score}%)`;
+        
+        // Set feedback text
+        feedbackText.textContent = scoreData.feedback;
+        
+        // Clear keyword containers
+        matchedKeywords.innerHTML = '';
+        missingKeywords.innerHTML = '';
+        
+        // Add matched keywords
+        if (scoreData.keywordMatches && scoreData.keywordMatches.length > 0) {
+            scoreData.keywordMatches.forEach(keyword => {
+                const keywordSpan = document.createElement('span');
+                keywordSpan.textContent = keyword;
+                keywordSpan.style.padding = '4px 10px';
+                keywordSpan.style.background = 'rgba(40, 167, 69, 0.2)';
+                keywordSpan.style.border = '1px solid rgba(40, 167, 69, 0.4)';
+                keywordSpan.style.borderRadius = '16px';
+                keywordSpan.style.fontSize = '14px';
+                matchedKeywords.appendChild(keywordSpan);
+            });
+        } else {
+            matchedKeywords.innerHTML = '<p>No specific keyword matches identified</p>';
+        }
+        
+        // Add missing keywords
+        if (scoreData.missingKeywords && scoreData.missingKeywords.length > 0) {
+            scoreData.missingKeywords.forEach(keyword => {
+                const keywordSpan = document.createElement('span');
+                keywordSpan.textContent = keyword;
+                keywordSpan.style.padding = '4px 10px';
+                keywordSpan.style.background = 'rgba(220, 53, 69, 0.2)';
+                keywordSpan.style.border = '1px solid rgba(220, 53, 69, 0.4)';
+                keywordSpan.style.borderRadius = '16px';
+                keywordSpan.style.fontSize = '14px';
+                missingKeywords.appendChild(keywordSpan);
+            });
+        } else {
+            missingKeywords.innerHTML = '<p>No specific missing keywords identified</p>';
+        }
+        
+        // Set improvement suggestions
+        improvementSuggestions.textContent = scoreData.improvedContent || 'No specific improvement suggestions available.';
+        
+        // Show the modal
+        modal.style.display = 'flex';
+    }
+
+    // Add close button handler for ATS modal
+    document.getElementById('close-ats-modal').addEventListener('click', function() {
+        document.getElementById('ats-score-modal').style.display = 'none';
+    });
+    
+</script>
+
+<script>
+    // Function to extract text from PDF using PDF.js
+    async function extractTextFromPDF(dataUrl) {
+        return new Promise((resolve, reject) => {
+            if (!pdfjsLib) {
+                reject(new Error("PDF.js is not loaded"));
+                return;
+            }
+    
+            // Remove data URL prefix to get base64 data
+            const loadingTask = pdfjsLib.getDocument(dataUrl);
+            
+            loadingTask.promise.then(async (pdf) => {
+                let fullText = '';
+                
+                // Extract text from all pages
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    
+                    // Concatenate text from the page
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
+                }
+                
+                resolve(fullText);
+            }).catch(error => {
+                console.error("Error extracting PDF text:", error);
+                reject(error);
+            });
+        });
+    }
+
+    class MLATSScorer {
+    constructor() {
+        // Professional domain keywords
+        this.professionalDomains = {
+            softwareDevelopment: {
+                keywords: [
+                    'software engineer', 'developer', 'programming', 
+                    'coding', 'web development', 'backend', 'frontend', 
+                    'full-stack', 'agile', 'scrum', 'microservices', 
+                    'cloud computing', 'api', 'database', 'algorithm',
+                    'kubernetes', 'docker', 'machine learning', 'ci/cd'
+                ],
+                improvementAreas: [
+                    'technical architecture', 'system design', 
+                    'performance optimization', 'scalability'
+                ]
+            },
+            cybersecurity: {
+                keywords: [
+                    'cybersecurity', 'network security', 'ethical hacking', 
+                    'information security', 'penetration testing', 
+                    'security analyst', 'threat detection', 'risk management',
+                    'cryptography', 'compliance', 'security protocols'
+                ],
+                improvementAreas: [
+                    'advanced security frameworks', 'incident response', 
+                    'security infrastructure'
+                ]
+            },
+            artificialIntelligence: {
+                keywords: [
+                    'ai engineer', 'machine learning', 'deep learning', 
+                    'neural networks', 'data science', 'natural language processing', 
+                    'computer vision', 'tensorflow', 'pytorch', 
+                    'algorithm design', 'predictive modeling'
+                ],
+                improvementAreas: [
+                    'advanced ai research', 'algorithmic innovation', 
+                    'interdisciplinary ai applications'
+                ]
+            },
+            
+            // Business and Finance Domains
+            businessAnalytics: {
+                keywords: [
+                    'business analyst', 'data analysis', 'strategic planning', 
+                    'business intelligence', 'market research', 
+                    'data visualization', 'reporting', 'dashboarding',
+                    'power bi', 'tableau', 'sql', 'predictive analytics'
+                ],
+                improvementAreas: [
+                    'advanced analytical techniques', 'strategic insights', 
+                    'business transformation'
+                ]
+            },
+            investmentBanking: {
+                keywords: [
+                    'investment banker', 'financial modeling', 'valuation', 
+                    'mergers and acquisitions', 'capital markets', 
+                    'financial analysis', 'risk assessment', 'portfolio management',
+                    'financial strategy', 'economic research'
+                ],
+                improvementAreas: [
+                    'advanced financial strategy', 'global market understanding', 
+                    'innovative financial products'
+                ]
+            },
+            entrepreneurship: {
+                keywords: [
+                    'startup founder', 'business development', 'innovation', 
+                    'venture capital', 'product strategy', 'market expansion', 
+                    'startup scaling', 'business model', 'entrepreneurial leadership'
+                ],
+                improvementAreas: [
+                    'disruptive innovation', 'strategic growth', 
+                    'entrepreneurial ecosystem'
+                ]
+            },
+            
+            // Creative and Media Domains
+            digitalMarketing: {
+                keywords: [
+                    'digital marketer', 'social media marketing', 'seo', 
+                    'content marketing', 'brand strategy', 'analytics', 
+                    'campaign management', 'growth hacking', 'ppc',
+                    'influencer marketing', 'marketing automation'
+                ],
+                improvementAreas: [
+                    'innovative marketing technologies', 'data-driven marketing', 
+                    'cross-channel strategy'
+                ]
+            },
+            graphicDesign: {
+                keywords: [
+                    'graphic designer', 'ui/ux', 'brand identity', 
+                    'adobe creative suite', 'illustration', 'visual communication', 
+                    'digital design', 'art direction', 'branding',
+                    'motion graphics', 'design thinking'
+                ],
+                improvementAreas: [
+                    'design innovation', 'interdisciplinary design', 
+                    'user experience optimization'
+                ]
+            },
+            contentCreation: {
+                keywords: [
+                    'content creator', 'copywriting', 'storytelling', 
+                    'content strategy', 'digital content', 'multimedia production', 
+                    'brand narrative', 'creative writing', 'editing',
+                    'multimedia storytelling', 'content marketing'
+                ],
+                improvementAreas: [
+                    'transmedia storytelling', 'content innovation', 
+                    'audience engagement strategies'
+                ]
+            },
+            
+            // Professional Services
+            consultancy: {
+                keywords: [
+                    'management consultant', 'strategy consulting', 
+                    'business transformation', 'process improvement', 
+                    'organizational development', 'strategic advisory',
+                    'change management', 'performance optimization'
+                ],
+                improvementAreas: [
+                    'advanced consulting methodologies', 'industry disruption', 
+                    'strategic innovation'
+                ]
+            },
+            humanResources: {
+                keywords: [
+                    'hr manager', 'talent acquisition', 'recruitment', 
+                    'employee relations', 'performance management', 
+                    'organizational development', 'hr strategy',
+                    'talent development', 'workforce planning'
+                ],
+                improvementAreas: [
+                    'strategic hr innovation', 'talent ecosystem', 
+                    'future of work'
+                ]
+            },
+            
+            // Healthcare and Research
+            medicalResearch: {
+                keywords: [
+                    'research scientist', 'clinical research', 'medical innovation', 
+                    'laboratory management', 'research methodology', 
+                    'data analysis', 'medical writing', 'experimental design',
+                    'biostatistics', 'research publication'
+                ],
+                improvementAreas: [
+                    'interdisciplinary research', 'cutting-edge methodologies', 
+                    'translational research'
+                ]
+            },
+            healthcareAdministration: {
+                keywords: [
+                    'healthcare administrator', 'medical management', 
+                    'healthcare policy', 'patient care coordination', 
+                    'healthcare technology', 'regulatory compliance',
+                    'healthcare innovation', 'strategic planning'
+                ],
+                improvementAreas: [
+                    'healthcare transformation', 'patient-centric strategies', 
+                    'technology integration'
+                ]
+            }
+        };
+
+        // Model configuration
+        this.model = null;
+        this.vocabularySize = 5000;
+        this.maxResumeLength = 1000;
+    }
+
+    // Identify the professional domain
+    identifyProfessionalDomain(resumeText) {
+        const lowercaseText = resumeText.toLowerCase();
+        
+        // Find the domain with most keyword matches
+        const domainMatches = Object.entries(this.professionalDomains).map(([domain, config]) => ({
+            domain,
+            matchCount: config.keywords.filter(keyword => 
+                lowercaseText.includes(keyword.toLowerCase())
+            ).length
+        }));
+
+        // Sort by match count and return top domain
+        const topDomain = domainMatches.sort((a, b) => b.matchCount - a.matchCount)[0];
+        
+        return topDomain.matchCount > 0 ? topDomain.domain : 'general';
+    }
+
+    // Extract important words based on identified domain
+    extractImportantWords(resumeText) {
+        const domain = this.identifyProfessionalDomain(resumeText);
+        
+        if (domain === 'general') {
+            // Generic important words if no specific domain found
+            return ['professional', 'experience', 'skills', 'expertise'];
+        }
+
+        const domainKeywords = this.professionalDomains[domain].keywords;
+        
+        // Find matches in the resume
+        const matchedKeywords = domainKeywords.filter(keyword => 
+            resumeText.toLowerCase().includes(keyword.toLowerCase())
+        );
+
+        return matchedKeywords.length > 0 ? matchedKeywords : 
+            domainKeywords.slice(0, 3); // Fallback to first 3 domain keywords
+    }
+
+    // Find potential improvements
+    findPotentialImprovements(resumeText) {
+        const domain = this.identifyProfessionalDomain(resumeText);
+        
+        if (domain === 'general') {
+            return [
+                'professional development', 
+                'skill enhancement', 
+                'career growth strategies'
+            ];
+        }
+
+        const improvementAreas = this.professionalDomains[domain].improvementAreas;
+        
+        // Find keywords not in the resume
+        const missingKeywords = improvementAreas.filter(keyword => 
+            !resumeText.toLowerCase().includes(keyword.toLowerCase())
+        );
+
+        return missingKeywords.length > 0 ? missingKeywords : 
+            improvementAreas.slice(0, 3); // Fallback to first 3 improvement areas
+    }
+
+    // Calculate resume score
+    calculateResumeScore(matchedKeywords, missingKeywords) {
+        const totalPossibleKeywords = 15;
+        const matchScore = (matchedKeywords.length / totalPossibleKeywords) * 100;
+        const missingPenalty = (missingKeywords.length / 5) * 10;
+        
+        return Math.max(50, Math.min(100, Math.round(matchScore - missingPenalty)));
+    }
+
+    // Generate feedback
+    generateFeedback(score, domain) {
+        const feedbackTemplates = {
+            highScore: {
+                softwareDevelopment: "Exceptional technical profile showcasing comprehensive software engineering expertise.",
+                dataScience: "Outstanding data science resume demonstrating advanced analytical capabilities.",
+                marketing: "Impressive marketing resume with strong strategic communication skills.",
+                banking: "Exceptional financial profile highlighting comprehensive banking expertise.",
+                teaching: "Remarkable educational professional resume with extensive pedagogical insights.",
+                graphicDesign: "Outstanding creative portfolio demonstrating exceptional design capabilities.",
+                projectManagement: "Exceptional project management resume showcasing strategic leadership.",
+                general: "Highly impressive professional resume with strong potential."
+            },
+            mediumScore: {
+                softwareDevelopment: "Solid technical profile with good potential for growth.",
+                dataScience: "Promising data science resume with room for skill enhancement.",
+                marketing: "Competent marketing resume with opportunities for strategic improvement.",
+                banking: "Capable financial profile with potential for further specialization.",
+                teaching: "Solid educational professional resume with opportunities for development.",
+                graphicDesign: "Promising design portfolio with potential for creative growth.",
+                projectManagement: "Competent project management resume with leadership potential.",
+                general: "Solid professional resume with opportunities for enhancement."
+            },
+            lowScore: {
+                softwareDevelopment: "Technical resume needs significant enhancement in skills and presentation.",
+                dataScience: "Data science profile requires comprehensive skill development.",
+                marketing: "Marketing resume needs substantial strategic refinement.",
+                banking: "Financial profile requires more comprehensive professional detailing.",
+                teaching: "Educational professional resume needs substantial improvement.",
+                graphicDesign: "Design portfolio requires significant creative development.",
+                projectManagement: "Project management resume needs enhanced leadership demonstration.",
+                general: "Professional resume requires comprehensive restructuring and skill highlighting."
+            }
+        };
+
+        if (score >= 90) {
+            return feedbackTemplates.highScore[domain] || feedbackTemplates.highScore.general;
+        } else if (score >= 60) {
+            return feedbackTemplates.mediumScore[domain] || feedbackTemplates.mediumScore.general;
+        } else {
+            return feedbackTemplates.lowScore[domain] || feedbackTemplates.lowScore.general;
+        }
+    }
+
+    // Generate improvement suggestions
+    generateImprovementSuggestions(score, domain) {
+        const improvementTemplates = {
+            softwareDevelopment: [
+                "Highlight specific programming languages and technologies",
+                "Showcase complex project implementations",
+                "Demonstrate problem-solving through technical achievements"
+            ],
+            dataScience: [
+                "Quantify data-driven outcomes",
+                "Highlight advanced analytical methodologies",
+                "Showcase machine learning project impacts"
+            ],
+            marketing: [
+                "Demonstrate measurable campaign results",
+                "Highlight digital marketing metrics",
+                "Showcase innovative marketing strategies"
+            ],
+            general: [
+                "Emphasize unique professional achievements",
+                "Quantify impact and results",
+                "Highlight continuous learning and skill development"
+            ]
+        };
+
+        const suggestions = improvementTemplates[domain] || improvementTemplates.general;
+        
+        if (score < 60) {
+            suggestions.push(
+                "Comprehensively review and restructure resume",
+                "Align resume more closely with job market expectations"
+            );
+        }
+
+        return suggestions.join(". ");
+    }
+
+    // Main prediction method
+    async predictATSScore(resumeText) {
+        // Identify professional domain
+        const domain = this.identifyProfessionalDomain(resumeText);
+        
+        // Extract keywords
+        const matchedKeywords = this.extractImportantWords(resumeText);
+        const missingKeywords = this.findPotentialImprovements(resumeText);
+        
+        // Calculate score
+        const score = this.calculateResumeScore(matchedKeywords, missingKeywords);
+        
+        return {
+            score: score,
+            domain: domain,
+            feedback: this.generateFeedback(score, domain),
+            keywordMatches: matchedKeywords,
+            missingKeywords: missingKeywords,
+            improvedContent: this.generateImprovementSuggestions(score, domain)
+        };
+    }
+}
+    // Global ML ATS Scorer initialization
+    let mlATSScorer = null;
+    
+      // Optional: Add training method to improve model over time
+    async function trainATSModel(trainingData) {
+        try {
+            // Ensure ML scorer is initialized
+            if (!mlATSScorer) {
+                mlATSScorer = new MLATSScorer();
+                await mlATSScorer.createModel();
+            }
+            
+            // Add training examples
+            for (const data of trainingData) {
+                const processedResume = await mlATSScorer.preprocessText(data.resumeText);
+                
+                // Add to training data
+                mlATSScorer.trainingData.resumes.push(
+                    mlATSScorer.padSequence(processedResume)
+                );
+                mlATSScorer.trainingData.labels.push(data.isGoodMatch ? 1 : 0);
+            }
+            
+            // Train the model
+            await mlATSScorer.model.fit(
+                tf.tensor2d(mlATSScorer.trainingData.resumes),
+                tf.tensor2d(mlATSScorer.trainingData.labels, [mlATSScorer.trainingData.labels.length, 1]),
+                {
+                    epochs: 50,
+                    batchSize: 32,
+                    validationSplit: 0.2
+                }
+            );
+            
+            console.log("ATS Model successfully trained!");
+            return true;
+        } catch (error) {
+            console.error("Model training failed:", error);
+            return false;
+        }
+    }
+    // Add this to your script after the MLATSScorer class definition
+
+// Sample training data 
+const trainingDatasets = {
+    // Technical Fields
+    softwareDevelopment: [
+        {
+            resumeText: "Senior Full-Stack Software Engineer with 7 years of experience in React, Node.js, and cloud-native architectures. Led development of scalable microservices, implemented CI/CD pipelines, and optimized application performance. Experienced in Agile methodologies and cross-functional team collaboration.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Junior developer with basic programming knowledge. Limited project experience and no professional software development background.",
+            isGoodMatch: false
+        }
+    ],
+    dataScience: [
+        {
+            resumeText: "Data Scientist with expertise in machine learning, deep learning, and predictive analytics. Developed AI models using TensorFlow and scikit-learn. Published research in top-tier machine learning conferences. Proficient in Python, R, and advanced statistical modeling.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Basic understanding of data analysis. No advanced machine learning skills or practical project experience.",
+            isGoodMatch: false
+        }
+    ],
+    cybersecurity: [
+        {
+            resumeText: "Cybersecurity Specialist with 6 years of experience in network security, threat detection, and incident response. Certified in CISSP and CompTIA Security+. Developed comprehensive security protocols and conducted vulnerability assessments for enterprise-level organizations.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "No formal cybersecurity training. Limited understanding of security concepts and no practical experience in threat mitigation.",
+            isGoodMatch: false
+        }
+    ],
+    cloudComputing: [
+        {
+            resumeText: "Cloud Solutions Architect with extensive experience in AWS, Azure, and Google Cloud Platform. Designed and implemented cloud migration strategies, developed scalable cloud infrastructure, and optimized cloud resource management.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Minimal cloud computing knowledge. No certifications or practical experience in cloud technologies.",
+            isGoodMatch: false
+        }
+    ],
+    artificialIntelligence: [
+        {
+            resumeText: "AI Research Engineer specializing in natural language processing and computer vision. Developed advanced neural network architectures, published in peer-reviewed AI conferences. Expertise in TensorFlow, PyTorch, and deep learning frameworks.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Basic understanding of AI concepts. No practical implementation or research experience.",
+            isGoodMatch: false
+        }
+    ],
+
+    // Teaching Fields
+    primaryEducation: [
+        {
+            resumeText: "Experienced Primary School Teacher with 8 years of classroom experience. Developed innovative teaching strategies, implemented interactive learning techniques, and maintained high student engagement. Specialized in curriculum development and student assessment.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Recent graduate with minimal teaching experience and no classroom management skills.",
+            isGoodMatch: false
+        }
+    ],
+    secondaryEducation: [
+        {
+            resumeText: "High School Mathematics and Science Teacher with 10 years of experience. Developed comprehensive teaching materials, led advanced placement programs, and consistently improved student academic performance. Holds advanced degree in Education.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "No formal teaching credentials. Lacks subject expertise and classroom management skills.",
+            isGoodMatch: false
+        }
+    ],
+    specialEducation: [
+        {
+            resumeText: "Special Education Specialist with 12 years of experience working with students with diverse learning needs. Developed individualized education plans, implemented inclusive teaching strategies, and collaborated with multidisciplinary teams.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "No specialized training in special education. Lacks understanding of inclusive teaching methodologies.",
+            isGoodMatch: false
+        }
+    ],
+
+    // Commerce and Business Fields
+    accounting: [
+        {
+            resumeText: "Certified Public Accountant with 7 years of experience in financial reporting, tax preparation, and auditing. Managed comprehensive financial strategies for mid-sized corporations. Proficient in advanced accounting software and regulatory compliance.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Basic bookkeeping knowledge. No professional accounting certifications or comprehensive financial management experience.",
+            isGoodMatch: false
+        }
+    ],
+    marketing: [
+        {
+            resumeText: "Digital Marketing Manager with 5 years of experience. Managed comprehensive social media campaigns, increased engagement by 50%. Proficient in SEO, content marketing, Google Analytics, and integrated marketing strategies.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Entry-level marketing assistant with no significant campaign management experience.",
+            isGoodMatch: false
+        }
+    ],
+    businessAnalysis: [
+        {
+            resumeText: "Senior Business Analyst with expertise in data-driven decision making. Conducted comprehensive market research, developed strategic business insights, and implemented process improvement methodologies. Proficient in advanced analytics tools.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Limited understanding of business analysis. No practical experience in data interpretation or strategic planning.",
+            isGoodMatch: false
+        }
+    ],
+
+    // Banking and Finance
+    banking: [
+        {
+            resumeText: "Senior Banking Professional with 10 years of experience in corporate banking. Managed high-value client portfolios, developed financial products, and implemented risk management strategies. Expertise in financial regulations and international banking.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "No banking experience. Lacks understanding of financial products and banking operations.",
+            isGoodMatch: false
+        }
+    ],
+    financialAdvising: [
+        {
+            resumeText: "Certified Financial Planner with 8 years of experience. Developed comprehensive investment strategies, managed retirement portfolios, and provided personalized financial counseling. Holds multiple industry certifications.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Minimal financial knowledge. No professional certifications or client management experience.",
+            isGoodMatch: false
+        }
+    ],
+
+    // Healthcare
+    nursing: [
+        {
+            resumeText: "Registered Nurse with 12 years of experience in critical care. Specialized in emergency room management, patient care coordination, and advanced medical procedures. Holds multiple advanced nursing certifications.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "No formal nursing qualifications. Lacks clinical experience and medical knowledge.",
+            isGoodMatch: false
+        }
+    ],
+    medicalResearch: [
+        {
+            resumeText: "Medical Research Scientist with extensive experience in clinical trials and pharmaceutical research. Published multiple peer-reviewed papers, developed innovative research methodologies, and contributed to breakthrough medical discoveries.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "No scientific research background. Lacks understanding of medical research methodologies.",
+            isGoodMatch: false
+        }
+    ],
+
+    // Engineering
+    mechanicalEngineering: [
+        {
+            resumeText: "Senior Mechanical Engineer with 10 years of experience in aerospace design. Led complex engineering projects, developed innovative mechanical solutions, and implemented advanced CAD design techniques. Holds multiple patents.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Recent graduate with no practical engineering experience. Limited technical skills and no project portfolio.",
+            isGoodMatch: false
+        }
+    ],
+    civilEngineering: [
+        {
+            resumeText: "Civil Engineer specializing in infrastructure development. Managed large-scale construction projects, conducted comprehensive site assessments, and developed sustainable urban planning solutions. Certified in multiple engineering disciplines.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "No professional civil engineering experience. Lacks technical knowledge and project management skills.",
+            isGoodMatch: false
+        }
+    ],
+
+    // Creative Fields
+    graphicDesign: [
+        {
+            resumeText: "Senior Graphic Designer with 8 years of experience in digital and print media. Created comprehensive brand identities, developed marketing collateral, and managed creative projects for top-tier clients. Proficient in Adobe Creative Suite.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Basic design skills with no professional portfolio or comprehensive design experience.",
+            isGoodMatch: false
+        }
+    ],
+    contentWriting: [
+        {
+            resumeText: "Professional Content Writer with expertise in technical and creative writing. Published in multiple national publications, developed comprehensive content strategies for digital platforms, and specialized in SEO-optimized writing.",
+            isGoodMatch: true
+        },
+        {
+            resumeText: "Limited writing experience. No professional publication credits or content strategy skills.",
+            isGoodMatch: false
+        }
+    ]
+};
+
+// Function to train the model
+async function trainModelWithSampleData() {
+    try {
+        // Ensure ML scorer is initialized
+        if (!mlATSScorer) {
+            mlATSScorer = new MLATSScorer();
+            await mlATSScorer.createModel();
+        }
+        
+        console.log("Starting model training...");
+        
+        // Add training examples
+        for (const data of trainingData) {
+            const processedResume = await mlATSScorer.preprocessText(data.resumeText);
+            
+            // Add to training data
+            mlATSScorer.trainingData.resumes.push(
+                mlATSScorer.padSequence(processedResume)
+            );
+            mlATSScorer.trainingData.labels.push(data.isGoodMatch ? 1 : 0);
+        }
+        
+        // Convert training data to tensors
+        const xs = tf.tensor2d(mlATSScorer.trainingData.resumes);
+        const ys = tf.tensor2d(mlATSScorer.trainingData.labels, [mlATSScorer.trainingData.labels.length, 1]);
+        
+        // Train the model with more detailed configuration
+        const history = await mlATSScorer.model.fit(xs, ys, {
+            epochs: 100, // Increased number of training iterations
+            batchSize: 32,
+            validationSplit: 0.2, // Use 20% of data for validation
+            callbacks: {
+                onEpochEnd: async (epoch, logs) => {
+                    console.log(`Epoch ${epoch}: loss = ${logs.loss}, accuracy = ${logs.acc}`);
+                }
+            }
+        });
+        
+        console.log("Model training completed successfully!");
+        
+        // Optional: Save model to localStorage for persistence
+        await mlATSScorer.model.save('localstorage://ats-resume-model');
+        
+        return true;
+    } catch (error) {
+        console.error("Model training failed:", error);
+        return false;
+    }
+}
+
+// Add an event listener to train the model when the page loads
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Check if a saved model exists
+        const savedModel = await tf.loadLayersModel('localstorage://ats-resume-model');
+        if (savedModel) {
+            console.log("Loaded saved model");
+            mlATSScorer.model = savedModel;
+        } else {
+            // Train a new model if no saved model exists
+            await trainModelWithSampleData();
+        }
+    } catch (error) {
+        // If no saved model, train a new one
+        await trainModelWithSampleData();
+    }
+});
+
+// Optional: Function to add more training data dynamically
+async function addTrainingExample(resumeText, isGoodMatch) {
+    if (!mlATSScorer) {
+        console.error("ML Scorer not initialized");
+        return false;
+    }
+    
+    try {
+        const processedResume = await mlATSScorer.preprocessText(resumeText);
+        
+        // Add new training example
+        mlATSScorer.trainingData.resumes.push(
+            mlATSScorer.padSequence(processedResume)
+        );
+        mlATSScorer.trainingData.labels.push(isGoodMatch ? 1 : 0);
+        
+        // Retrain the model with the new data
+        const xs = tf.tensor2d(mlATSScorer.trainingData.resumes);
+        const ys = tf.tensor2d(mlATSScorer.trainingData.labels, [mlATSScorer.trainingData.labels.length, 1]);
+        
+        await mlATSScorer.model.fit(xs, ys, {
+            epochs: 50,
+            batchSize: 32
+        });
+        
+        console.log("Model updated with new training example");
+        return true;
+    } catch (error) {
+        console.error("Failed to add training example:", error);
+        return false;
+    }
+}
+    </script>
+    
+<!-- Debug Script Loading -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Debugging function to check file loading
+        function checkScriptLoading(scriptPath) {
+            console.log(`Attempting to load script: ${scriptPath}`);
+            
+            const script = document.createElement('script');
+            script.src = scriptPath;
+            
+            script.onerror = function() {
+                console.error(`❌ Failed to load script: ${scriptPath}`);
+                console.error('Possible reasons:');
+                console.error('1. Incorrect file path');
+                console.error('2. File permissions');
+                console.error('3. Network issues');
+                
+                // Additional diagnostic information
+                console.log('Current page URL:', window.location.href);
+                console.log('Current directory:', window.location.pathname);
+            };
+            
+            script.onload = function() {
+                console.log(`✅ Successfully loaded script: ${scriptPath}`);
+            };
+            
+            document.head.appendChild(script);
+        }
+    
+        // Check PDF.js loading
+        checkScriptLoading('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js');
+        checkScriptLoading('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js');
+        
+       
+    });
+    </script>
+</body>
+</html>

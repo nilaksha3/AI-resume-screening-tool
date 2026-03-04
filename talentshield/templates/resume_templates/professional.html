@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} - Professional Resume</title>
+    <style>
+        /* Professional Template Styles */
+        @media print {
+            body {
+                font-size: 12pt;
+                color: #000;
+                background-color: #fff;
+                margin: 0;
+                padding: 0;
+            }
+            .resume-template {
+                width: 100%;
+                height: auto;
+                padding: 0.5in;
+                margin: 0;
+                box-shadow: none;
+            }
+            /* Important to implement page break for PDF */
+            .page-break {
+                page-break-before: always;
+            }
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.5;
+            color: #333;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .resume-template {
+            width: 8.5in;
+            padding: 0.5in;
+            margin: 20px auto;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .resume-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #2c3e50;
+        }
+        
+        .resume-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 10px;
+            color: #2c3e50;
+        }
+        
+        .resume-contact {
+            font-size: 14px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 20px;
+            font-weight: 600;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin: 20px 0 10px;
+        }
+        
+        .experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 5px;
+        }
+        
+        .company-name {
+            font-weight: 600;
+            font-size: 17px;
+            margin: 0;
+            color: #000;
+        }
+        
+        .experience-duration {
+            font-style: italic;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .job-title {
+            font-weight: 600;
+            margin: 0 0 5px;
+            color: #555;
+        }
+        
+        .institution-name {
+            font-weight: 600;
+            margin: 0;
+            font-size: 16px;
+        }
+        
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .skills-list li {
+            background-color: #f5f5f5;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        .certifications-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .certification-name {
+            font-weight: 600;
+        }
+        
+        /* Score Page Styles */
+        .page-break {
+            page-break-before: always;
+            height: 0;
+            display: block;
+        }
+        
+        .score-page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0.5in;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .score-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            margin-top: 2rem;
+        }
+        
+        .score-circle-container {
+            margin-bottom: 2rem;
+        }
+        
+        .score-header {
+            margin-bottom: 3rem;
+        }
+        
+        .score-details {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+        
+        .score-rating {
+            font-size: 24px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin: 1.5rem 0;
+        }
+        
+        .score-description {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .improvement-section {
+            margin-top: 3rem;
+            max-width: 700px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-template">
+        <div class="resume-header">
+            <h1 class="resume-name">{{ name }}</h1>
+            <div class="resume-contact">
+                <p>{{ email }} | {{ phone }} | {{ location }}</p>
+            </div>
+        </div>
+        
+        <div class="resume-section">
+            <h2 class="section-title">Professional Summary</h2>
+            <div class="section-content">
+                <p>{{ summary }}</p>
+            </div>
+        </div>
+        
+        <div class="resume-section">
+            <h2 class="section-title">Work Experience</h2>
+            <div class="section-content">
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <h3 class="company-name">{{ company }}</h3>
+                        <span class="experience-duration">{{ duration }}</span>
+                    </div>
+                    <p class="job-title">{{ position }}</p>
+                    <p class="job-description">{{ responsibilities }}</p>
+                </div>
+                {% if experiences %}
+                    {% for exp in experiences %}
+                    <div class="experience-item">
+                        <div class="experience-header">
+                            <h3 class="company-name">{{ exp.company }}</h3>
+                            <span class="experience-duration">{{ exp.duration }}</span>
+                        </div>
+                        <p class="job-title">{{ exp.position }}</p>
+                        <p class="job-description">{{ exp.responsibilities }}</p>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if education.institution or education.degree %}
+        <div class="resume-section">
+            <h2 class="section-title">Education</h2>
+            <div class="section-content">
+                <div class="education-item">
+                    <h3 class="institution-name">{{ education.institution }}</h3>
+                    <p class="degree">{{ education.degree }} {% if education.graduation_year %}<span class="graduation-year">{{ education.graduation_year }}</span>{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if skills %}
+        <div class="resume-section">
+            <h2 class="section-title">Skills</h2>
+            <div class="section-content skills-content">
+                <ul class="skills-list">
+                    {% for skill in skills %}
+                    <li>{{ skill.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if certifications %}
+        <div class="resume-section">
+            <h2 class="section-title">Certifications</h2>
+            <div class="section-content">
+                <ul class="certifications-list">
+                    {% for cert in certifications %}
+                    <li>
+                        <span class="certification-name">{{ cert.name }}</span> - 
+                        <span class="certification-org">{{ cert.organization }}</span>
+                        ({{ cert.date_earned }})
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Page break to start score on a new page -->
+    <div class="page-break"></div>
+    
+    <!-- Score page -->
+    {% if resume_score %}
+    <div class="score-page">
+        <div class="score-header">
+            <h2 class="section-title">Resume Score Analysis</h2>
+        </div>
+        
+        <div class="score-container">
+            <div class="score-circle-container">
+                <!-- Blue circle with percentage -->
+                <div style="
+                    width: 200px;
+                    height: 200px;
+                    background-color: #2c3e50;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
+                    <div style="
+                        width: 160px;
+                        height: 160px;
+                        background-color: white;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">
+                        <span style="
+                            font-size: 48px;
+                            font-weight: bold;
+                            color: #2c3e50;
+                        ">{{ resume_score.score }}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="score-details">
+                <div class="score-rating">
+                    Rating: {{ resume_score.rating }}
+                </div>
+                
+                <div class="score-description">
+                    This score reflects the overall strength and completeness of your resume based on industry standards.
+                </div>
+            </div>
+            
+            {% if resume_score.feedback %}
+            <div class="improvement-section">
+                <div style="background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 5px; padding: 20px;">
+                    <div style="font-weight: 600; margin-bottom: 15px; color: #2c3e50; font-size: 18px;">
+                        Improvement Suggestions:
+                    </div>
+                    <ul style="padding-left: 25px; margin: 0; color: #555; font-size: 16px;">
+                        {% for item in resume_score.feedback %}
+                        <li style="margin-bottom: 10px;">{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>

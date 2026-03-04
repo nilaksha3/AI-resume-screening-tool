@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Manager Dashboard - TalentShield</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #0A1128;
+            --secondary-color: #001F54;
+            --accent-color: #034078;
+            --accent-glow: #1282A2;
+            --text-color: #FEFCFB;
+            --background-color: #030B1B;
+            --card-bg: rgba(1, 22, 39, 0.95);
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --neutral-color: #6c757d;
+            --sidebar-width: 280px;
+            --header-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--background-color);
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-color);
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            width: var(--sidebar-width);
+            padding: var(--header-height) 24px 40px;
+            position: fixed;
+            height: 100%;
+            left: -280px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-right: 1px solid rgba(18, 130, 162, 0.2);
+        }
+
+        .sidebar:hover,
+        .sidebar.active {
+            left: 0;
+        }
+
+        .logo {
+            color: var(--text-color);
+            font-size: 28px;
+            font-weight: 700;
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: var(--sidebar-width);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            z-index: 1001;
+            border-bottom: 1px solid rgba(18, 130, 162, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar:hover .logo,
+        .sidebar.active .logo {
+            left: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            right: -16px;
+            top: calc(var(--header-height) + 20px);
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(18, 130, 162, 0.3);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--accent-glow);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 16px 20px;
+            margin: 8px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(18, 130, 162, 0.1);
+            border: 1px solid rgba(18, 130, 162, 0.2);
+        }
+
+        .nav-item i {
+            margin-right: 16px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .content {
+            margin-left: 0;
+            padding: var(--header-height) 40px 40px;
+            min-height: 100vh;
+            background: var(--background-color);
+            position: relative;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar:hover + .content,
+        .content.expanded {
+            margin-left: var(--sidebar-width);
+        }
+
+        .welcome-message {
+            font-size: 28px;
+            margin-bottom: 24px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #FEFCFB, #1282A2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(18, 130, 162, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h3 {
+            margin-bottom: 20px;
+            color: var(--accent-glow);
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card h3 i {
+            margin-right: 10px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table th, .table td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        .table tr {
+            border-bottom: 1px solid rgba(18, 130, 162, 0.2);
+            transition: background 0.3s ease;
+        }
+
+        .table tr:hover {
+            background: rgba(18, 130, 162, 0.1);
+        }
+
+        .table th {
+            background: rgba(3, 64, 120, 0.5);
+            color: var(--accent-glow);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .table tr:last-child {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: var(--text-color);
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: var(--neutral-color);
+        }
+
+        .status-approved {
+            background: var(--success-color);
+        }
+
+        .status-rejected {
+            background: var(--danger-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 6px 10px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .view-btn {
+            background: var(--accent-color);
+            color: var(--text-color);
+        }
+
+        .view-btn:hover {
+            background: var(--accent-glow);
+        }
+
+        .approve-btn {
+            background: var(--success-color);
+            color: var(--text-color);
+        }
+
+        .approve-btn:hover {
+            background: #218838;
+        }
+
+        .reject-btn {
+            background: var(--danger-color);
+            color: var(--text-color);
+        }
+
+        .reject-btn:hover {
+            background: #c82333;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+            transform: translateY(50px);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(18, 130, 162, 0.3);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--accent-glow);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: var(--accent-glow);
+            border-bottom: 1px solid rgba(18, 130, 162, 0.3);
+            padding-bottom: 15px;
+        }
+
+        .candidate-profile {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .profile-section {
+            margin-bottom: 20px;
+        }
+
+        .profile-section h4 {
+            color: var(--accent-glow);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .profile-detail {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .profile-label {
+            width: 120px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .profile-value {
+            flex: 1;
+        }
+
+        .resume-preview {
+            grid-column: span 2;
+            background: rgba(1, 22, 39, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            border: 1px solid rgba(18, 130, 162, 0.2);
+        }
+
+        .resume-preview h4 {
+            color: var(--accent-glow);
+            margin-bottom: 15px;
+        }
+
+        .resume-content {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(1, 22, 39, 0.8);
+            border-radius: 8px;
+        }
+
+        .resume-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .modal-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .modal-btn.primary {
+            background: var(--accent-color);
+            color: var(--text-color);
+        }
+
+        .modal-btn.primary:hover {
+            background: var(--accent-glow);
+        }
+
+        .modal-btn.approve {
+            background: var(--success-color);
+            color: var(--text-color);
+        }
+
+        .modal-btn.reject {
+            background: var(--danger-color);
+            color: var(--text-color);
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            background: rgba(18, 130, 162, 0.2);
+            border: 1px solid rgba(18, 130, 162, 0.3);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(18, 130, 162, 0.3);
+            border-top: 4px solid var(--accent-glow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 8px;
+            z-index: 1100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+        
+        .alert.error {
+            background: var(--danger-color);
+        }
+        
+        .alert.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: 0;
+                transform: translateX(-100%);
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .candidate-profile {
+                grid-template-columns: 1fr;
+            }
+
+            .resume-preview {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">TalentShield</div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <nav>
+            <a href="hrmanager.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span class="nav-text"> HR Dashboard</span>
+            </a>
+           
+           
+            <a href="login.html" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="content">
+        <div class="welcome-message">Candidate Applications</div>
+        
+        <!-- Applications Card -->
+        <div class="card">
+            <h3><i class="fas fa-file-alt"></i> Recent Applications</h3>
+            <div id="loading-container">
+                <div class="loading-spinner"></div>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Applied On</th>
+                        <th>Status</th>
+                        <th>ATS SCORE</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="applications-table">
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Candidate Detail Modal -->
+    <div class="modal" id="candidate-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button>
+            <h2 class="modal-title" id="candidate-name">Candidate Profile</h2>
+            
+            <div class="candidate-profile" id="candidate-profile">
+                <!-- Will be populated by JavaScript -->
+            </div>
+            
+            <div class="modal-actions" id="modal-actions">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert" id="alert-message">Operation successful</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Protect this page - only allow HR Managers
+            if (!protectPage(['hr-manager'])) {
+                return; // Stop execution if not authorized
+            }
+            
+            // Sample candidate data
+            const candidates = [
+                {
+                    id: 1,
+                    name: "John Doe",
+                    email: "john.doe@example.com",
+                    phone: "(555) 123-4567",
+                    position: "Software Engineer",
+                    appliedDate: "2025-03-01",
+                    status: "pending",
+                    education: "B.S. Computer Science, MIT (2023)",
+                    experience: "2 years at Tech Solutions Inc.",
+                    skills: ["JavaScript", "React", "Node.js", "Python", "MongoDB"],
+                    summary: "Full-stack developer with a focus on JavaScript technologies and a passion for building scalable web applications.",
+                    resumeText: "JOHN DOE\n\nContact: john.doe@example.com | (555) 123-4567\n\nSUMMARY\nFull-stack developer with a focus on JavaScript technologies and a passion for building scalable web applications.\n\nEDUCATION\nB.S. Computer Science, MIT (2023)\n\nEXPERIENCE\nJunior Software Engineer, Tech Solutions Inc. (2023-Present)\n- Developed and maintained client-facing web applications using React.js\n- Collaborated with UX team to implement responsive designs\n- Built RESTful APIs using Node.js and Express\n- Implemented automated testing using Jest and Cypress\n\nTechnical Intern, CodeCraft Labs (Summer 2022)\n- Assisted senior developers with feature implementation\n- Created documentation for internal API services\n- Participated in code reviews and agile development processes\n\nSKILLS\n- Frontend: JavaScript, TypeScript, React.js, HTML5, CSS3, SASS\n- Backend: Node.js, Express, Python, Django\n- Databases: MongoDB, PostgreSQL, MySQL\n- Tools: Git, Docker, AWS, CI/CD pipelines"
+                },
+                {
+                    id: 2,
+                    name: "Jane Smith",
+                    email: "jane.smith@example.com",
+                    phone: "(555) 234-5678",
+                    position: "UX Designer",
+                    appliedDate: "2025-03-02",
+                    status: "approved",
+                    education: "M.A. Interaction Design, Rhode Island School of Design (2022)",
+                    experience: "3 years at Creative Digital Agency",
+                    skills: ["Figma", "Adobe XD", "Sketch", "UI/UX", "Prototyping"],
+                    summary: "User experience designer with a strong background in visual design and user research.",
+                    resumeText: "JANE SMITH\n\nContact: jane.smith@example.com | (555) 234-5678\n\nSUMMARY\nUser experience designer with a strong background in visual design and user research.\n\nEDUCATION\nM.A. Interaction Design, Rhode Island School of Design (2022)\nB.F.A. Graphic Design, Parsons School of Design (2020)\n\nEXPERIENCE\nUX Designer, Creative Digital Agency (2022-Present)\n- Led user research and usability testing for client projects\n- Created wireframes, prototypes, and high-fidelity mockups\n- Collaborated with development team to ensure design implementation\n- Presented design concepts to clients and stakeholders\n\nVisual Design Intern, TechStart Inc. (Summer 2021)\n- Assisted in the redesign of company's mobile application\n- Created icons, illustrations, and visual elements\n- Participated in user testing sessions\n\nSKILLS\n- Design: UI/UX Design, Interaction Design, Visual Design, Information Architecture\n- Tools: Figma, Adobe XD, Sketch, InVision, Adobe Creative Suite\n- Research: User Research, Usability Testing, A/B Testing, User Personas\n- Other: HTML/CSS, Design Systems, Responsive Design"
+                },
+                {
+                    id: 3,
+                    name: "Robert Johnson",
+                    email: "robert.johnson@example.com",
+                    phone: "(555) 345-6789",
+                    position: "Product Manager",
+                    appliedDate: "2025-03-03",
+                    status: "rejected",
+                    education: "MBA, Stanford University (2020)",
+                    experience: "5 years at Global Products Inc.",
+                    skills: ["Product Strategy", "Agile", "Market Research", "Data Analysis", "Roadmapping"],
+                    summary: "Experienced product manager with a track record of launching successful digital products.",
+                    resumeText: "ROBERT JOHNSON\n\nContact: robert.johnson@example.com | (555) 345-6789\n\nSUMMARY\nExperienced product manager with a track record of launching successful digital products.\n\nEDUCATION\nMBA, Stanford University (2020)\nB.S. Business Administration, UC Berkeley (2016)\n\nEXPERIENCE\nSenior Product Manager, Global Products Inc. (2022-Present)\n- Led cross-functional teams to develop and launch new product features\n- Defined product vision, strategy, and roadmap\n- Conducted market research and competitive analysis\n- Analyzed user metrics to inform product decisions\n\nProduct Manager, TechInnovate (2020-2022)\n- Managed the full product lifecycle from conception to launch\n- Collaborated with engineering, design, and marketing teams\n- Created and maintained product requirements documents\n- Participated in agile ceremonies and sprint planning\n\nBusiness Analyst, ConsultGroup (2016-2018)\n- Gathered and documented business requirements\n- Analyzed data to identify business opportunities\n- Created reports and presentations for executive leadership\n\nSKILLS\n- Product Management: Product Strategy, Roadmapping, Feature Prioritization, Go-to-Market Strategy\n- Methodologies: Agile, Scrum, Kanban, Lean\n- Tools: Jira, Confluence, Asana, Trello, Google Analytics, Amplitude\n- Technical: SQL, Excel, PowerPoint, Tableau"
+                },
+                {
+                    id: 4,
+                    name: "Emily Williams",
+                    email: "emily.williams@example.com",
+                    phone: "(555) 456-7890",
+                    position: "Data Analyst",
+                    appliedDate: "2025-03-05",
+                    status: "pending",
+                    education: "M.S. Data Science, Georgia Tech (2024)",
+                    experience: "1 year at DataDriven Solutions",
+                    skills: ["Python", "SQL", "Tableau", "R", "Statistical Analysis"],
+                    summary: "Data analyst with expertise in statistical analysis and data visualization.",
+                    resumeText: "EMILY WILLIAMS\n\nContact: emily.williams@example.com | (555) 456-7890\n\nSUMMARY\nData analyst with expertise in statistical analysis and data visualization.\n\nEDUCATION\nM.S. Data Science, Georgia Tech (2024)\nB.S. Statistics, University of Michigan (2022)\n\nEXPERIENCE\nJunior Data Analyst, DataDriven Solutions (2024-Present)\n- Analyzed large datasets to identify trends and insights\n- Created interactive dashboards using Tableau\n- Developed and maintained SQL databases\n- Prepared reports and presentations for stakeholders\n\nData Science Intern, HealthTech Inc. (Summer 2023)\n- Assisted in building predictive models for patient outcomes\n- Cleaned and preprocessed healthcare datasets\n- Created visualizations to communicate findings\n\nSKILLS\n- Languages: Python, R, SQL\n- Data Analysis: Statistical Analysis, Hypothesis Testing, Regression Analysis\n- Data Visualization: Tableau, Power BI, Matplotlib, Seaborn\n- Tools: Jupyter Notebook, Git, Excel, Google Sheets\n- Machine Learning: Scikit-learn, Pandas, NumPy"
+                },
+                {
+                    id: 5,
+                    name: "Michael Chen",
+                    email: "michael.chen@example.com",
+                    phone: "(555) 567-8901",
+                    position: "Frontend Developer",
+                    appliedDate: "2025-03-06",
+                    status: "pending",
+                    education: "B.S. Computer Science, UCLA (2023)",
+                    experience: "2 years at WebTech Solutions",
+                    skills: ["JavaScript", "React", "CSS", "HTML", "TypeScript"],
+                    summary: "Frontend developer with a strong focus on creating responsive and accessible web interfaces.",
+                    resumeText: "MICHAEL CHEN\n\nContact: michael.chen@example.com | (555) 567-8901\n\nSUMMARY\nFrontend developer with a strong focus on creating responsive and accessible web interfaces.\n\nEDUCATION\nB.S. Computer Science, UCLA (2023)\n\nEXPERIENCE\nFrontend Developer, WebTech Solutions (2023-Present)\n- Built responsive web applications using React and TypeScript\n- Implemented UI/UX designs using modern CSS frameworks\n- Collaborated with backend developers to integrate APIs\n- Ensured web accessibility compliance (WCAG 2.1)\n\nWeb Development Intern, StartupHub (Summer 2022)\n- Assisted in the development of company's website\n- Fixed bugs and implemented minor features\n- Participated in code reviews and testing\n\nSKILLS\n- Languages: JavaScript, TypeScript, HTML5, CSS3\n- Frameworks/Libraries: React.js, Vue.js, Next.js, Redux\n- CSS: SASS/SCSS, Styled Components, Tailwind CSS, Bootstrap\n- Tools: Webpack, Babel, ESLint, Jest, React Testing Library\n- Other: Responsive Design, Web Accessibility, Performance Optimization"
+                }
+            ];
+            
+            function populateApplicationsTable() {
+                const tableBody = document.getElementById('applications-table');
+                tableBody.innerHTML = '';
+                
+                candidates.forEach(candidate => {
+                    const row = document.createElement('tr');
+                    
+                    // Format the date
+                    const appliedDate = new Date(candidate.appliedDate);
+                    const formattedDate = appliedDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    // Determine the status class and text
+                    let statusClass, statusText;
+                    switch(candidate.status) {
+                        case 'approved':
+                            statusClass = 'status-approved';
+                            statusText = 'Approved';
+                            break;
+                        case 'rejected':
+                            statusClass = 'status-rejected';
+                            statusText = 'Rejected';
+                            break;
+                        default:
+                            statusClass = 'status-pending';
+                            statusText = 'Pending';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${candidate.name}</td>
+                        <td>${candidate.position}</td>
+                        <td>${formattedDate}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" data-id="${candidate.id}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            ${candidate.status === 'pending' ? `
+                                <button class="action-btn approve-btn" data-id="${candidate.id}">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="action-btn reject-btn" data-id="${candidate.id}">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            ` : ''}
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Add event listeners to buttons
+                document.querySelectorAll('.view-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const candidateId = this.getAttribute('data-id');
+                        openCandidateModal(candidateId);
+                    });
+                });
+                
+                document.querySelectorAll('.approve-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const candidateId = this.getAttribute('data-id');
+                        updateCandidateStatus(candidateId, 'approved');
+                    });
+                });
+                
+                document.querySelectorAll('.reject-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const candidateId = this.getAttribute('data-id');
+                        updateCandidateStatus(candidateId, 'rejected');
+                    });
+                });
+            }
+            
+            function updateCandidateStatus(candidateId, status) {
+                // Find the candidate and update their status
+                const candidate = candidates.find(c => c.id == candidateId);
+                if (candidate) {
+                    candidate.status = status;
+                    
+                    // Refresh the table
+                    populateApplicationsTable();
+                    
+                    // Show feedback message
+                    alert(`Candidate ${candidate.name} has been ${status}.`);
+                }
+            }
+            
+            function openCandidateModal(candidateId) {
+                const candidate = candidates.find(c => c.id == candidateId);
+                if (!candidate) return;
+                
+                // Set the modal title
+                document.getElementById('candidate-name').textContent = candidate.name;
+                
+                // Populate candidate profile
+                const profileContainer = document.getElementById('candidate-profile');
+                
+                // Create skills list HTML
+                const skillsHTML = candidate.skills.map(skill => 
+                    `<span class="skill-tag">${skill}</span>`
+                ).join('');
+                
+                pprofileContainer.innerHTML = `
+                <div class="profile-section">
+                    <h4>Personal Information</h4>
+                    <div class="profile-detail">
+                        <div class="profile-label">Email:</div>
+                        <div class="profile-value">${candidate.email}</div>
+                    </div>
+                    <div class="profile-detail">
+                        <div class="profile-label">Phone:</div>
+                        <div class="profile-value">${candidate.phone}</div>
+                    </div>
+                    <div class="profile-detail">
+                        <div class="profile-label">Position:</div>
+                        <div class="profile-value">${candidate.position}</div>
+                    </div>
+                    <div class="profile-detail">
+                        <div class="profile-label">Applied Date:</div>
+                        <div class="profile-value">${new Date(candidate.appliedDate).toLocaleDateString()}</div>
+                    </div>
+                    <div class="profile-detail">
+                        <div class="profile-label">Status:</div>
+                        <div class="profile-value">
+                            <span class="status-badge status-${candidate.status}">
+                                ${candidate.status.charAt(0).toUpperCase() + candidate.status.slice(1)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h4>Qualifications</h4>
+                    <div class="profile-detail">
+                        <div class="profile-label">Education:</div>
+                        <div class="profile-value">${candidate.education}</div>
+                    </div>
+                    <div class="profile-detail">
+                        <div class="profile-label">Experience:</div>
+                        <div class="profile-value">${candidate.experience}</div>
+                    </div>
+                    <div class="profile-detail">
+                        <div class="profile-label">Summary:</div>
+                        <div class="profile-value">${candidate.summary}</div>
+                    </div>
+                    <div class="profile-detail">
+                        <div class="profile-label">Skills:</div>
+                        <div class="profile-value">
+                            <div class="skills-list">${skillsHTML}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="resume-preview">
+                    <h4>Resume</h4>
+                    <div class="resume-content">
+                        <pre>${candidate.resumeText}</pre>
+                    </div>
+                    <div class="resume-actions">
+                        <button class="modal-btn primary">
+                            <i class="fas fa-download"></i> Download Resume
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Populate modal actions
+            const modalActions = document.getElementById('modal-actions');
+            
+            if (candidate.status === 'pending') {
+                modalActions.innerHTML = `
+                    <button class="modal-btn approve" onclick="updateCandidateStatus(${candidate.id}, 'approved')">
+                        <i class="fas fa-check"></i> Approve Candidate
+                    </button>
+                    <button class="modal-btn reject" onclick="updateCandidateStatus(${candidate.id}, 'rejected')">
+                        <i class="fas fa-times"></i> Reject Candidate
+                    </button>
+                `;
+            } else {
+                modalActions.innerHTML = `
+                    <button class="modal-btn primary" id="close-modal-btn">
+                        Close
+                    </button>
+                `;
+                
+                // Add event listener to close button
+                setTimeout(() => {
+                    document.getElementById('close-modal-btn').addEventListener('click', function() {
+                        closeModal();
+                    });
+                }, 100);
+            }
+            
+            // Make updateCandidateStatus function available globally for the modal buttons
+            window.updateCandidateStatus = function(candidateId, status) {
+                updateCandidateStatus(candidateId, status);
+                closeModal();
+            };
+            
+            // Show the modal
+            document.getElementById('candidate-modal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('candidate-modal').classList.remove('active');
+        }
+        
+        // Initialize the table
+        populateApplicationsTable();
+        
+        // Add event listener to close modal button
+        document.getElementById('close-modal').addEventListener('click', closeModal);
+        
+        // Close modal when clicking outside
+        document.getElementById('candidate-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+    });
+    
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('.content');
+
+        sidebar.classList.toggle('active');
+        content.classList.toggle('expanded');
+    }
+    
+    // Authentication function
+    function protectPage(allowedRoles) {
+        // You can customize this authentication logic
+        return true; // For demonstration, always return true
+    }
+</script>
+<!-- Add this script to your hrmanager.html file before the closing </body> tag -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get applications table
+    const applicationsTable = document.getElementById('applications-table');
+    
+    // Get candidate modal elements
+    const candidateModal = document.getElementById('candidate-modal');
+    const candidateName = document.getElementById('candidate-name');
+    const candidateProfile = document.getElementById('candidate-profile');
+    const modalActions = document.getElementById('modal-actions');
+    const closeModalBtn = document.getElementById('close-modal');
+    
+    function loadApplications() {
+// Clear existing content
+if (applicationsTable) {
+    applicationsTable.innerHTML = '';
+
+    // Get uploads from localStorage
+    const uploads = JSON.parse(localStorage.getItem('resumeUploads') || '[]');
+
+    if (uploads.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="6" style="text-align: center;">No applications found</td>';
+        applicationsTable.appendChild(row);
+        return;
+    }
+
+    // Sort by date (newest first)
+    uploads.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+
+    // Add each upload to the table
+    uploads.forEach(upload => {
+        // Status styling
+        let statusClass = 'status-pending';
+        let statusText = 'Pending';
+
+        if (upload.status === 'approved') {
+            statusClass = 'status-approved';
+            statusText = 'Approved';
+        } else if (upload.status === 'rejected') {
+            statusClass = 'status-rejected';
+            statusText = 'Rejected';
+        }
+
+        // Format date
+        const date = new Date(upload.uploadDate);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+
+        // ATS Score Display
+        let atsScoreHtml = '<td>N/A</td>';
+        if (upload.atsScore !== undefined) {
+            let scoreColor;
+            if (upload.atsScore >= 85) {
+                scoreColor = '#28a745'; // Green for high scores
+            } else if (upload.atsScore >= 70) {
+                scoreColor = '#ffc107'; // Yellow for medium scores
+            } else {
+                scoreColor = '#dc3545'; // Red for low scores
+            }
+
+            atsScoreHtml = `
+                <td>
+                    <div style="display: flex; align-items: center;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: conic-gradient(${scoreColor} ${upload.atsScore}%, #3a3a3a ${upload.atsScore}%); display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                            <div style="width: 34px; height: 34px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center;">
+                                <span>${upload.atsScore}</span>
+                            </div>
+                        </div>
+                        <span>${upload.atsScore}/100</span>
+                    </div>
+                </td>
+            `;
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${upload.fileName}</td>
+            <td>${upload.position}</td>
+            <td>${formattedDate}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            ${atsScoreHtml}
+            <td class="action-buttons">
+                <button class="action-btn view-btn" data-id="${upload.id}">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                ${upload.status === 'pending' ? `
+                    <button class="action-btn approve-btn" data-id="${upload.id}">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="action-btn reject-btn" data-id="${upload.id}">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                ` : ''}
+            </td>
+        `;
+        
+        applicationsTable.appendChild(row);
+    });
+
+    // Add event listeners to buttons
+    addButtonEventListeners();
+}
+}
+
+    
+    // Add button event listeners
+    function addButtonEventListeners() {
+        // View buttons
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const resumeId = this.getAttribute('data-id');
+                openCandidateModal(resumeId);
+            });
+        });
+        
+        // Approve buttons
+        document.querySelectorAll('.approve-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const resumeId = this.getAttribute('data-id');
+                updateResumeStatus(resumeId, 'approved');
+            });
+        });
+        
+        // Reject buttons
+        document.querySelectorAll('.reject-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const resumeId = this.getAttribute('data-id');
+                updateResumeStatus(resumeId, 'rejected');
+            });
+        });
+    }
+    
+    function openCandidateModal(resumeId) {
+if (!candidateModal || !candidateName || !candidateProfile || !modalActions) {
+    console.error('Modal elements not found');
+    return;
+}
+
+// Get resume data
+const uploads = JSON.parse(localStorage.getItem('resumeUploads') || '[]');
+const upload = uploads.find(u => u.id == resumeId);
+
+if (!upload) {
+    console.error('Resume not found');
+    return;
+}
+
+// Set modal title
+candidateName.textContent = `Resume: ${upload.fileName}`;
+
+// Format file size for display
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' bytes';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+// Format date for display
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+}
+
+// Determine ATS Score color and label
+let scoreColor = '#dc3545';
+let scoreLabel = 'Needs Improvement';
+if (upload.atsScore >= 85) {
+    scoreColor = '#28a745';
+    scoreLabel = 'Excellent';
+} else if (upload.atsScore >= 70) {
+    scoreColor = '#ffc107';
+    scoreLabel = 'Good';
+}
+
+// ATS Score HTML
+let atsScoreHtml = '';
+if (upload.atsScore !== undefined) {
+    atsScoreHtml = `
+        <div class="profile-section" style="margin-top: 20px; border-top: 1px solid rgba(18, 130, 162, 0.3); padding-top: 20px;">
+            <h4 style="color: var(--accent-glow); margin-bottom: 15px;">ATS Analysis</h4>
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(${scoreColor} ${upload.atsScore}%, #3a3a3a ${upload.atsScore}%); display: flex; align-items: center; justify-content: center; margin-right: 20px;">
+                    <div style="width: 70px; height: 70px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                        <span style="font-size: 24px; font-weight: bold;">${upload.atsScore}</span>
+                        <span style="font-size: 12px;">Score</span>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">${scoreLabel}</div>
+                    <div style="font-size: 14px; opacity: 0.8;">${upload.atsFeedback?.feedback || 'No detailed feedback available'}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Populate candidate profile
+candidateProfile.innerHTML = `
+    <div class="profile-section">
+        <h4>Resume Information</h4>
+        <div class="profile-detail"><div class="profile-label">File Name:</div><div class="profile-value">${upload.fileName}</div></div>
+        <div class="profile-detail"><div class="profile-label">Position:</div><div class="profile-value">${upload.position}</div></div>
+        <div class="profile-detail"><div class="profile-label">Upload Date:</div><div class="profile-value">${formatDate(upload.uploadDate)}</div></div>
+        <div class="profile-detail"><div class="profile-label">Status:</div><div class="profile-value"><span class="status-badge status-${upload.status}">${upload.status.charAt(0).toUpperCase() + upload.status.slice(1)}</span></div></div>
+        <div class="profile-detail"><div class="profile-label">File Size:</div><div class="profile-value">${formatFileSize(upload.fileSize)}</div></div>
+    </div>
+    ${atsScoreHtml}
+    <div class="resume-preview">
+        <h4>Resume Preview</h4>
+        <div class="resume-content">
+            ${upload.dataUrl ? 
+                `<iframe src="${upload.dataUrl}" style="width:100%; height:400px; border:none;"></iframe>` : 
+                `<div style="display: flex; flex-direction: column; align-items: center; padding: 30px; color: rgba(255,255,255,0.7);">
+                    <i class="fas fa-file-pdf fa-3x" style="color: var(--accent-glow); margin-bottom: 15px;"></i>
+                    <p>PDF Preview Not Available</p>
+                    <p style="margin-top: 10px; font-size: 14px;">${upload.fileName}</p>
+                </div>`
+            }
+        </div>
+        <div class="resume-actions">
+            <button class="modal-btn primary" id="download-resume-btn">
+                <i class="fas fa-download"></i> Download Resume
+            </button>
+        </div>
+    </div>
+`;
+
+// Add download button functionality
+const downloadBtn = document.getElementById('download-resume-btn');
+if (downloadBtn && upload.dataUrl) {
+    downloadBtn.addEventListener('click', function() {
+        const a = document.createElement('a');
+        a.href = upload.dataUrl;
+        a.download = upload.fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+} else if (downloadBtn) {
+    downloadBtn.disabled = true;
+    downloadBtn.textContent = 'Download Not Available';
+}
+
+// Show the modal
+candidateModal.classList.add('active');
+}
+
+    // Function to update resume status
+    function updateResumeStatus(resumeId, status) {
+        // Get uploads from localStorage
+        const uploads = JSON.parse(localStorage.getItem('resumeUploads') || '[]');
+        
+        // Find the resume
+        const index = uploads.findIndex(upload => upload.id == resumeId);
+        
+        if (index !== -1) {
+            // Update status
+            uploads[index].status = status;
+            
+            // Save back to localStorage
+            localStorage.setItem('resumeUploads', JSON.stringify(uploads));
+            
+            // Refresh the applications table
+            loadApplications();
+            
+            // Show success message
+            alert(`Resume ${status} successfully!`);
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Function to close the modal
+    function closeModal() {
+        if (candidateModal) {
+            candidateModal.classList.remove('active');
+        }
+    }
+    
+    // Add close button event listener
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+    
+    // Close modal when clicking outside
+    if (candidateModal) {
+        candidateModal.addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+    }
+    
+    // Load applications on page load
+    loadApplications();
+    
+    // Refresh applications periodically (optional)
+    setInterval(loadApplications, 5000);
+});
+</script>
+</body>
+</html>

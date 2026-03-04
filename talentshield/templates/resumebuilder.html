@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentShield - Resume Builder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #0A1128;
+            --secondary-color: #001F54;
+            --accent-color: #034078;
+            --accent-glow: #1282A2;
+            --text-color: #FEFCFB;
+            --background-color: #030B1B;
+            --card-bg: rgba(1, 22, 39, 0.95);
+            --sidebar-width: 280px;
+            --header-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--background-color);
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            width: var(--sidebar-width);
+            padding: var(--header-height) 24px 40px;
+            position: fixed;
+            height: 100%;
+            left: -280px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-right: 1px solid rgba(18, 130, 162, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar:hover,
+        .sidebar.active {
+            left: 0;
+        }
+
+        .logo {
+            color: var(--text-color);
+            font-size: 28px;
+            font-weight: 700;
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: var(--sidebar-width);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            z-index: 1001;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(18, 130, 162, 0.2);
+            text-shadow: 0 0 15px var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar:hover .logo,
+        .sidebar.active .logo {
+            left: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            right: -16px;
+            top: calc(var(--header-height) + 20px);
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.5);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--accent-glow);
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.8);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 16px 20px;
+            margin: 4px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(18, 130, 162, 0.1);
+            border: 1px solid rgba(18, 130, 162, 0.2);
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.2);
+        }
+
+        .nav-item i {
+            margin-right: 16px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: var(--header-height) 40px 40px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar:hover + .main-content,
+        .main-content.expanded {
+            margin-left: var(--sidebar-width);
+        }
+
+        /* Resume Builder Specific Styles */
+        .resume-builder {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .template-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(18, 130, 162, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .template-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 30px rgba(18, 130, 162, 0.2);
+        }
+
+        .template-preview {
+            height: 300px;
+            background: rgba(254, 252, 251, 0.05);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: var(--accent-glow);
+        }
+
+        .template-info h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #FEFCFB, #1282A2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .template-info p {
+            color: rgba(254, 252, 251, 0.8);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .resume-form {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid rgba(18, 130, 162, 0.2);
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .form-section h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #FEFCFB, #1282A2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(1, 22, 39, 0.8);
+            border: 1px solid rgba(18, 130, 162, 0.3);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .add-section {
+            background: none;
+            border: 2px dashed rgba(18, 130, 162, 0.4);
+            color: var(--accent-glow);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .add-section:hover {
+            border-color: var(--accent-glow);
+            background: rgba(18, 130, 162, 0.1);
+        }
+
+        .generate-button {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-glow));
+            color: var(--text-color);
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .generate-button:hover {
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: 0;
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">TalentShield</div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <nav>
+            <a href="{% url 'talentShield' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="option.html" class="nav-item">
+                <i class="fas fa-cube"></i>
+                <span class="nav-text">Login</span>
+            </a>
+            <a href="resumebuilder.html" class="nav-item">
+                <i class="fas fa-folder"></i>
+                <span class="nav-text">Resume Builder</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="resume-builder">
+            <div class="template-grid">
+                <div class="template-card" data-template="professional" onclick="selectTemplate('professional', this)">
+                    <div class="template-preview">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="template-info">
+                        <h3>Professional</h3>
+                        <p>Clean and modern design suitable for corporate positions</p>
+                    </div>
+                </div>
+                <div class="template-card" data-template="technical" onclick="selectTemplate('technical', this)">
+                    <div class="template-preview">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="template-info">
+                        <h3>Technical</h3>
+                        <p>Focused on technical skills and achievements</p>
+                    </div>
+                </div>
+            </div>
+
+            <form class="resume-form" action="{% url 'generate_pdf' %}" method="post">
+                {% csrf_token %}
+                <!-- Hidden field to store selected template -->
+                <input type="hidden" name="selected_template" id="selected_template" value="professional">
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h2>Personal Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" name="phone">
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" name="location">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rest of form sections, adding name attributes to all inputs -->
+                <div class="form-section">
+                    <h2>Professional Summary</h2>
+                    <div class="form-group">
+                        <label>Summary</label>
+                        <textarea name="summary" placeholder="Brief overview of your professional background and key strengths..."></textarea>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h2>Skills</h2>
+                    <div class="form-group">
+                        <label>Skills</label>
+                        <textarea name="skills" placeholder="Enter your skills, separated by commas (e.g., Python, JavaScript, Project Management)"></textarea>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h2>Work Experience</h2>
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" name="company">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Position</label>
+                            <input type="text" name="position">
+                        </div>
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <input type="text" name="duration" placeholder="e.g., 2020 - Present">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Responsibilities & Achievements</label>
+                        <textarea name="responsibilities"></textarea>
+                    </div>
+                    <!-- Keep the add button -->
+                </div>
+
+                <!-- Education Section -->
+                <div class="form-section">
+                    <h2>Education</h2>
+                    <div class="form-group">
+                        <label>Institution</label>
+                        <input type="text" name="institution" placeholder="University/College Name">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Degree</label>
+                            <input type="text" name="degree" placeholder="e.g., Bachelor of Science in Computer Science">
+                        </div>
+                        <div class="form-group">
+                            <label>Graduation Year</label>
+                            <input type="text" name="graduation_year" placeholder="e.g., 2020">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Certification</h2>
+                    <div class="form-group">
+                        <label>Certification Name</label>
+                        <input type="text" name="certification" placeholder="e.g., AWS Certified Solutions Architect">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Issuing Organization</label>
+                            <input type="text" name="organization" placeholder="e.g., Amazon Web Services">
+                        </div>
+                        <div class="form-group">
+                            <label>Date Earned</label>
+                            <input type="text" name="date_earned" placeholder="e.g., June 2022">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="generate-button">Generate Resume</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('expanded');
+        }
+
+        function selectTemplate(templateName, element) {
+            document.getElementById('selected_template').value = templateName;
+
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                .template-card.selected {
+                    border: 2px solid var(--accent-glow);
+                    box-shadow: 0 0 20px rgba(18, 130, 162, 0.3);
+                    transform: translateY(-5px);
+                }
+            </style>
+        `);
+    </script>
+</body>
+</html>

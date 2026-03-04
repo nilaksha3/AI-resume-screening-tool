@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentShield - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #0A1128;
+            --secondary-color: #001F54;
+            --accent-color: #034078;
+            --accent-glow: #1282A2;
+            --text-color: #FEFCFB;
+            --background-color: #030B1B;
+            --card-bg: rgba(1, 22, 39, 0.95);
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --header-height: 80px;
+            --footer-height: 250px;
+            --error-color: #ff4757;
+            --success-color: #2ed573;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--background-color);
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-color);
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            width: var(--sidebar-width);
+            padding: var(--header-height) 24px 40px;
+            position: fixed;
+            height: 100%;
+            left: -280px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-right: 1px solid rgba(18, 130, 162, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar:hover,
+        .sidebar.active {
+            left: 0;
+        }
+
+        .logo {
+            color: var(--text-color);
+            font-size: 28px;
+            font-weight: 700;
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: var(--sidebar-width);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            z-index: 1001;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(18, 130, 162, 0.2);
+            text-shadow: 0 0 15px var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar:hover .logo,
+        .sidebar.active .logo {
+            left: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            right: -16px;
+            top: calc(var(--header-height) + 20px);
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.5);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--accent-glow);
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.8);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 16px 20px;
+            margin: 4px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(18, 130, 162, 0.1);
+            border: 1px solid rgba(18, 130, 162, 0.2);
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.2);
+        }
+
+        .nav-item i {
+            margin-right: 16px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: var(--header-height) 40px 40px;
+            min-height: 100vh;
+            background: var(--background-color);
+            position: relative;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar:hover + .main-content,
+        .main-content.expanded {
+            margin-left: var(--sidebar-width);
+        }
+
+        .login-container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(18, 130, 162, 0.2);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #FEFCFB, #1282A2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            padding-right: 40px;
+            background: rgba(1, 22, 39, 0.8);
+            border: 1px solid rgba(18, 130, 162, 0.3);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 0 2px rgba(18, 130, 162, 0.2);
+        }
+
+        .form-group.error input {
+            border-color: var(--error-color);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            color: var(--accent-glow);
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            background: #2f3640;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s ease;
+        }
+
+        .password-strength-text {
+            font-size: 12px;
+            margin-top: 4px;
+            color: var(--accent-glow);
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .login-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-glow));
+            color: var(--text-color);
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-button:hover {
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.4);
+        }
+
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .login-button .spinner {
+            display: none;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .login-button.loading .spinner {
+            display: block;
+        }
+
+        .login-button.loading span {
+            visibility: hidden;
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .auth-links a {
+            color: var(--accent-glow);
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .auth-links a:hover {
+            opacity: 0.8;
+        }
+
+        .divider {
+            color: var(--accent-glow);
+            opacity: 0.5;
+        }
+
+        .social-login {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .social-login-text {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .social-login-text::before,
+        .social-login-text::after {
+            content: "";
+            flex: 1;
+            border-top: 1px solid rgba(18, 130, 162, 0.3);
+        }
+
+        .social-login-text span {
+            padding: 0 16px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .social-button {
+            background: rgba(1, 22, 39, 0.8);
+            border: 1px solid rgba(18, 130, 162, 0.3);
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .social-button:hover {
+            background: rgba(18, 130, 162, 0.1);
+            border-color: var(--accent-glow);
+        }
+
+        .captcha-container {
+            margin-bottom: 24px;
+            background: rgba(1, 22, 39, 0.8);
+            border: 1px solid rgba(18, 130, 162, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            background: var(--success-color);
+            color: var(--text-color);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .alert.show {
+            transform: translateX(0);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: var(--text-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* New styles for role selection */
+        .role-selection {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .role-selection label {
+            cursor: pointer;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">TalentShield</div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <nav>
+            <a href="{% url 'talentShield' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="option.html" class="nav-item">
+                <i class="fas fa-cube"></i>
+                <span class="nav-text">Role Selection</span>
+            </a>
+            <a href="signup.html" class="nav-item">
+                <i class="fas fa-user-plus"></i>
+                <span class="nav-text">Sign Up</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>TalentShield</h1>
+                <p>Welcome back</p>
+            </div>
+            <form id="loginForm">
+                <div class="role-selection">
+                    <label>
+                        <input type="radio" name="role" value="candidate" checked>
+                        Candidate
+                    </label>
+                    <label>
+                        <input type="radio" name="role" value="hr-manager">
+                        HR Manager
+                    </label>
+                </div>
+                <div class="form-group" id="emailGroup">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                    <div class="error-message">Please enter a valid email address</div>
+                </div>
+                <div class="form-group" id="passwordGroup">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                    <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="strengthBar"></div>
+                    </div>
+                    <div class="password-strength-text" id="strengthText">Password strength: None</div>
+                    <div class="error-message">Password must be at least 8 characters</div>
+                </div>
+                <div class="remember-me">
+                    <input type="checkbox" id="remember">
+                    <label for="remember">Remember me</label>
+                </div>
+                <button type="submit" class="login-button" id="loginButton">
+                    <span>Log In</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+            <div class="auth-links">
+                <a href="signup.html">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert" id="alert">Login successful!</div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('expanded');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const passwordToggle = document.getElementById('passwordToggle');
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            const loginButton = document.getElementById('loginButton');
+            const alert = document.getElementById('alert');
+            
+            // Check if a role was previously selected on the option page
+            const savedRole = localStorage.getItem('userRole');
+            if (savedRole) {
+                // Select the appropriate radio button
+                const radioButton = document.querySelector(`input[name="role"][value="${savedRole}"]`);
+                if (radioButton) {
+                    radioButton.checked = true;
+                }
+            }
+
+            // Password visibility toggle
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                passwordToggle.classList.toggle('fa-eye');
+                passwordToggle.classList.toggle('fa-eye-slash');
+            });
+
+            // Password strength checker
+            function checkPasswordStrength(password) {
+                let score = 0;
+                let strength = '';
+                let color = '';
+
+                if (password.length >= 8) score++;
+                if (/[A-Z]/.test(password)) score++;
+                if (/[a-z]/.test(password)) score++;
+                if (/[0-9]/.test(password)) score++;
+                if (/[^A-Za-z0-9]/.test(password)) score++;
+
+                switch (score) {
+                    case 0:
+                    case 1:
+                        strength = 'Weak';
+                        color = 'red';
+                        break;
+                    case 2:
+                        strength = 'Fair';
+                        color = 'orange';
+                        break;
+                    case 3:
+                        strength = 'Good';
+                        color = 'yellow';
+                        break;
+                    case 4:
+                    case 5:
+                        strength = 'Strong';
+                        color = 'green';
+                        break;
+                }
+
+                strengthBar.style.width = (score * 20) + '%';
+                strengthText.textContent = `Password strength: ${strength}`;
+                strengthBar.style.backgroundColor = color;
+            }
+
+            passwordInput.addEventListener('input', function() {
+                checkPasswordStrength(passwordInput.value);
+            });
+
+            // Helper function to get CSRF token from cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            loginForm.addEventListener('submit', function(event) {
+    event.preventDefault();  // Stop default form submission
+    
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    const selectedRole = document.querySelector('input[name="role"]:checked').value;
+    
+    // Disable login button during processing
+    loginButton.classList.add('loading');
+    loginButton.disabled = true;
+    
+    // Check if it's HR manager login
+    if (selectedRole === 'hr-manager') {
+        fetch('/hr-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert.textContent = "HR Login successful!";
+                alert.classList.add('show');
+                
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1000);
+            } else {
+                alert.textContent = data.error || "Invalid HR credentials";
+                alert.classList.add('show');
+                
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                }, 3000);
+            }
+        })
+        .catch(error => {
+            console.error("HR Login error:", error);
+            alert.textContent = "Server error. Please try again later.";
+            alert.classList.add('show');
+        })
+        .finally(() => {
+            // Re-enable login button
+            loginButton.classList.remove('loading');
+            loginButton.disabled = false;
+        });
+    } else {
+        // Existing candidate login logic
+        fetch('/api/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+                role: selectedRole
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Store login state
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userRole', selectedRole);
+                localStorage.setItem('userEmail', email);
+                
+                // Show success message
+                alert.textContent = "Login successful!";
+                alert.classList.add('show');
+                
+                // Redirect after success
+                setTimeout(() => {
+                    if (selectedRole === 'hr-manager') {
+                        window.location.href = 'hrmanager.html';
+                    } else {
+                        window.location.href = 'candidate.html';
+                    }
+                }, 1000);
+            } else {
+                // Show error message from server response
+                alert.textContent = data.error || "Invalid login credentials.";
+                alert.classList.add('show');
+            }
+        })
+        .catch(error => {
+            console.error("Login error:", error);
+            alert.textContent = "Server error. Please try again later.";
+            alert.classList.add('show');
+        })
+        .finally(() => {
+            // Re-enable login button
+            loginButton.classList.remove('loading');
+            loginButton.disabled = false;
+        });
+    }
+});
+            });
+        
+    </script>
+</body>
+</html>

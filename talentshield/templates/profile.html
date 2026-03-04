@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - TalentShield</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #0A1128;
+            --secondary-color: #001F54;
+            --accent-color: #034078;
+            --accent-glow: #1282A2;
+            --text-color: #FEFCFB;
+            --background-color: #030B1B;
+            --card-bg: rgba(1, 22, 39, 0.95);
+            --sidebar-width: 280px;
+            --header-height: 80px;
+            --border-color: rgba(18, 130, 162, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--background-color);
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-color);
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            width: var(--sidebar-width);
+            padding: var(--header-height) 24px 40px;
+            position: fixed;
+            height: 100%;
+            left: -280px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar:hover,
+        .sidebar.active {
+            left: 0;
+        }
+
+        .logo {
+            color: var(--text-color);
+            font-size: 28px;
+            font-weight: 700;
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: var(--sidebar-width);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            z-index: 1001;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+            text-shadow: 0 0 15px var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar:hover .logo,
+        .sidebar.active .logo {
+            left: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            right: -16px;
+            top: calc(var(--header-height) + 20px);
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.5);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--accent-glow);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 16px 20px;
+            margin: 4px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(18, 130, 162, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-item i {
+            margin-right: 16px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .content {
+            margin-left: 0;
+            padding: var(--header-height) 40px 40px;
+            min-height: 100vh;
+            background: var(--background-color);
+            position: relative;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar:hover + .content,
+        .content.expanded {
+            margin-left: var(--sidebar-width);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+            background: linear-gradient(135deg, #FEFCFB, #1282A2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.3);
+            overflow: hidden;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .profile-title {
+            font-size: 16px;
+            text-align: center;
+            color: var(--accent-glow);
+            margin-bottom: 20px;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 20px 0;
+        }
+
+        .profile-info {
+            margin-bottom: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .info-item i {
+            width: 24px;
+            color: var(--accent-glow);
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .skills-section {
+            margin: 10px 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            color: var(--accent-glow);
+        }
+
+        .section-title i {
+            margin-right: 10px;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            background: rgba(18, 130, 162, 0.15);
+            border: 1px solid rgba(18, 130, 162, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: rgba(18, 130, 162, 0.3);
+            border-color: var(--accent-glow);
+        }
+
+        .button {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-glow));
+            color: var(--text-color);
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .button:hover {
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.4);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .profile-card {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 28px;
+            }
+
+            .profile-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">TalentShield</div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <nav>
+            <a href="candidate.html" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span class="nav-text">Candidate Dashboard</span>
+            </a>
+            
+            <a href="upload.html" class="nav-item">
+                <i class="fas fa-file-upload"></i>
+                <span class="nav-text">Upload</span>
+            </a>
+            <a href="login.html" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="content">
+        <h2>My Profile</h2>
+        <div class="profile-card">
+            
+            <h2 class="profile-name" id="profile-name">Loading...</h2>
+            <p class="profile-title" id="profile-title">Loading...</p>
+            <div class="divider"></div>
+            <div class="profile-info">
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <span id="email">Loading...</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <span id="phone">Loading...</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="location">Loading...</span>
+                </div>
+            </div>
+            <div class="skills-section">
+                <h3 class="section-title">
+                    <i class="fas fa-code"></i> Skills
+                </h3>
+                <div class="skills-container" id="skills-container">
+                    <!-- Skills will load here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const content = document.querySelector('.content');
+
+            sidebar.classList.toggle('active');
+            content.classList.toggle('expanded');
+        }
+
+        function loadUserProfile() {
+            fetch("/api/my-profile/")  // Fetch API for logged-in user's profile
+                .then(response => {
+                    if (response.status === 403) {
+                        // Redirect to login if not authenticated
+                        window.location.href = "/login";
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById("profile-name").innerText = data.name;
+                    document.getElementById("profile-title").innerText = data.title;
+                    document.getElementById("email").innerText = data.email;
+                    document.getElementById("phone").innerText = data.phone;
+                    document.getElementById("location").innerText = data.location;
+                    document.getElementById("profile-pic").src = data.profile_picture;
+                    let skillsContainer = document.getElementById("skills-container");
+                    skillsContainer.innerHTML = "";
+                    data.skills.forEach(skill => {
+                        let skillTag = document.createElement("span");
+                        skillTag.className = "skill-tag";
+                        skillTag.innerText = skill;
+                        skillsContainer.appendChild(skillTag);
+                    });
+                })
+                .catch(error => console.error("Error fetching user profile:", error));
+        }
+        
+        // Load user profile on page load
+        window.onload = loadUserProfile;
+    </script>
+</body>
+</html>

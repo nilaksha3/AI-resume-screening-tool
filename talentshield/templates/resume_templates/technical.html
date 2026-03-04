@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} - Technical Resume</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Technical Template Styles */
+        @media print {
+            body {
+                font-size: 12pt;
+                color: #000;
+                background-color: #fff;
+                margin: 0;
+                padding: 0;
+            }
+            .resume-template {
+                width: 100%;
+                height: auto;
+                padding: 0.5in;
+                margin: 0;
+                box-shadow: none;
+            }
+            /* Important to implement page break for PDF */
+            .page-break {
+                page-break-before: always;
+            }
+        }
+        
+        body {
+            font-family: 'Roboto', 'Arial', sans-serif;
+            line-height: 1.5;
+            color: #333;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .resume-template {
+            width: 8.5in;
+            padding: 0.5in;
+            margin: 20px auto;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .technical-header {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #0078d7;
+            margin-bottom: 25px;
+        }
+        
+        .name-section {
+            margin-bottom: 15px;
+        }
+        
+        .resume-name {
+            font-size: 28px;
+            font-weight: 500;
+            margin: 0 0 5px;
+            color: #0078d7;
+        }
+        
+        .resume-title {
+            font-size: 16px;
+            font-weight: 400;
+            margin: 0;
+            color: #555;
+        }
+        
+        .tech-contact-info {
+            margin-top: 10px;
+        }
+        
+        .contact-row {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .contact-icon {
+            color: #0078d7;
+            margin-right: 8px;
+        }
+        
+        .section-title {
+            background-color: #f0f0f0;
+            color: #0078d7;
+            padding: 8px 15px;
+            font-size: 18px;
+            font-weight: 500;
+            margin: 25px 0 15px;
+            border-left: 5px solid #0078d7;
+        }
+        
+        .tech-skills {
+            margin-top: 20px;
+        }
+        
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .tech-skill-badge {
+            background-color: #e1eef7;
+            color: #0078d7;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            border: 1px solid #bfdcf4;
+        }
+        
+        .tech-experience-item {
+            margin-bottom: 20px;
+        }
+        
+        .tech-exp-header {
+            margin-bottom: 10px;
+        }
+        
+        .tech-job-title {
+            margin: 0 0 5px;
+            font-size: 18px;
+            color: #222;
+        }
+        
+        .tech-exp-details {
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .tech-separator {
+            margin: 0 5px;
+        }
+        
+        .tech-responsibilities {
+            padding-left: 20px;
+            border-left: 2px solid #ddd;
+        }
+        
+        .tech-education {
+            margin-bottom: 20px;
+        }
+        
+        .tech-degree {
+            margin: 0 0 5px;
+            font-size: 16px;
+        }
+        
+        .tech-institution {
+            color: #555;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .tech-cert-heading {
+            font-size: 16px;
+            margin: 15px 0 10px;
+        }
+        
+        .tech-cert-list {
+            padding-left: 20px;
+            margin: 0;
+        }
+        
+        .tech-cert-item {
+            margin-bottom: 5px;
+        }
+        
+        .tech-cert-name {
+            font-weight: 500;
+        }
+        
+        /* Score Page Styles */
+        .page-break {
+            page-break-before: always;
+            height: 0;
+            display: block;
+        }
+        
+        .score-page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0.5in;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .score-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            margin-top: 2rem;
+        }
+        
+        .score-circle-container {
+            margin-bottom: 2rem;
+        }
+        
+        .score-header {
+            margin-bottom: 3rem;
+        }
+        
+        .score-details {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+        
+        .score-rating {
+            font-size: 24px;
+            font-weight: 500;
+            color: #0078d7;
+            margin: 1.5rem 0;
+        }
+        
+        .score-description {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .improvement-section {
+            margin-top: 3rem;
+            max-width: 700px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-template">
+        <div class="technical-header">
+            <div class="name-section">
+                <h1 class="resume-name">{{ name }}</h1>
+                <p class="resume-title">{{ position }}</p>
+            </div>
+            <div class="tech-contact-info">
+                <div class="contact-row">
+                    <div class="contact-item">
+                        <span class="contact-icon"><i class="fas fa-envelope"></i></span>
+                        <span class="contact-text">{{ email }}</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon"><i class="fas fa-phone"></i></span>
+                        <span class="contact-text">{{ phone }}</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon"><i class="fas fa-map-marker-alt"></i></span>
+                        <span class="contact-text">{{ location }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="resume-section tech-summary">
+            <h2 class="section-title">Technical Profile</h2>
+            <div class="section-content">
+                <p>{{ summary }}</p>
+            </div>
+        </div>
+        
+        <div class="resume-section tech-skills">
+            <h2 class="section-title">Technical Skills</h2>
+            <div class="section-content">
+                <div class="skills-container">
+                    {% for skill in skills %}
+                    <div class="tech-skill-badge">{{ skill.name }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="resume-section">
+            <h2 class="section-title">Professional Experience</h2>
+            <div class="section-content">
+                <div class="tech-experience-item">
+                    <div class="tech-exp-header">
+                        <h3 class="tech-job-title">{{ position }}</h3>
+                        <div class="tech-exp-details">
+                            <span class="tech-company">{{ company }}</span>
+                            <span class="tech-separator">•</span>
+                            <span class="tech-duration">{{ duration }}</span>
+                        </div>
+                    </div>
+                    <div class="tech-responsibilities">
+                        <p>{{ responsibilities }}</p>
+                    </div>
+                </div>
+                {% if experiences %}
+                    {% for exp in experiences %}
+                    <div class="tech-experience-item">
+                        <div class="tech-exp-header">
+                            <h3 class="tech-job-title">{{ exp.position }}</h3>
+                            <div class="tech-exp-details">
+                                <span class="tech-company">{{ exp.company }}</span>
+                                <span class="tech-separator">•</span>
+                                <span class="tech-duration">{{ exp.duration }}</span>
+                            </div>
+                        </div>
+                        <div class="tech-responsibilities">
+                            <p>{{ exp.responsibilities }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="resume-section">
+            <h2 class="section-title">Education & Certifications</h2>
+            <div class="section-content">
+                {% if education.institution or education.degree %}
+                <div class="tech-education">
+                    <h3 class="tech-degree">{{ education.degree }}</h3>
+                    <p class="tech-institution">{{ education.institution }} {% if education.graduation_year %}| {{ education.graduation_year }}{% endif %}</p>
+                </div>
+                {% endif %}
+                
+                {% if certifications %}
+                <div class="tech-certifications">
+                    <h3 class="tech-cert-heading">Professional Certifications</h3>
+                    <ul class="tech-cert-list">
+                        {% for cert in certifications %}
+                        <li class="tech-cert-item">
+                            <span class="tech-cert-name">{{ cert.name }}</span> - {{ cert.organization }} ({{ cert.date_earned }})
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page break to start score on a new page -->
+    <div class="page-break"></div>
+    
+    <!-- Score page -->
+    {% if resume_score %}
+    <div class="score-page">
+        <div class="score-header">
+            <h2 class="section-title">Resume Score Analysis</h2>
+        </div>
+        
+        <div class="score-container">
+            <div class="score-circle-container">
+                <!-- Blue circle with percentage -->
+                <div style="
+                    width: 200px;
+                    height: 200px;
+                    background-color: #0078d7;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
+                    <div style="
+                        width: 160px;
+                        height: 160px;
+                        background-color: white;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">
+                        <span style="
+                            font-size: 48px;
+                            font-weight: bold;
+                            color: #0078d7;
+                        ">{{ resume_score.score }}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="score-details">
+                <div class="score-rating">
+                    Rating: {{ resume_score.rating }}
+                </div>
+                
+                <div class="score-description">
+                    This score reflects the overall strength and completeness of your resume based on industry standards.
+                </div>
+            </div>
+            
+            {% if resume_score.feedback %}
+            <div class="improvement-section">
+                <div style="background-color: #f0f0f0; border-left: 5px solid #0078d7; padding: 20px;">
+                    <div style="font-weight: 500; margin-bottom: 15px; color: #333; font-size: 18px;">
+                        Improvement Suggestions:
+                    </div>
+                    <ul style="padding-left: 25px; margin: 0; color: #555; font-size: 16px;">
+                        {% for item in resume_score.feedback %}
+                        <li style="margin-bottom: 10px;">{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>

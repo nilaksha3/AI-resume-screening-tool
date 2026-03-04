@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentShield - Role Selection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #0A1128;
+            --secondary-color: #001F54;
+            --accent-color: #034078;
+            --accent-glow: #1282A2;
+            --text-color: #FEFCFB;
+            --background-color: #030B1B;
+            --card-bg: rgba(1, 22, 39, 0.95);
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --header-height: 80px;
+            --footer-height: 250px;
+            --error-color: #ff4757;
+            --success-color: #2ed573;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--background-color);
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-color);
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            width: var(--sidebar-width);
+            padding: var(--header-height) 24px 40px;
+            position: fixed;
+            height: 100%;
+            left: -280px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-right: 1px solid rgba(18, 130, 162, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar:hover,
+        .sidebar.active {
+            left: 0;
+        }
+
+        .logo {
+            color: var(--text-color);
+            font-size: 28px;
+            font-weight: 700;
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: var(--sidebar-width);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            z-index: 1001;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(18, 130, 162, 0.2);
+            text-shadow: 0 0 15px var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar:hover .logo,
+        .sidebar.active .logo {
+            left: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            right: -16px;
+            top: calc(var(--header-height) + 20px);
+            background: var(--accent-color);
+            border: none;
+            color: var(--text-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.5);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--accent-glow);
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.8);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 16px 20px;
+            margin: 4px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(18, 130, 162, 0.1);
+            border: 1px solid rgba(18, 130, 162, 0.2);
+            box-shadow: 0 0 15px rgba(18, 130, 162, 0.2);
+        }
+
+        .nav-item i {
+            margin-right: 16px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: var(--header-height) 40px 40px;
+            min-height: 100vh;
+            background: var(--background-color);
+            position: relative;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar:hover + .main-content,
+        .main-content.expanded {
+            margin-left: var(--sidebar-width);
+        }
+
+        .role-selection-container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(18, 130, 162, 0.2);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .role-selection-container h1 {
+            margin-bottom: 24px;
+            font-size: 28px;
+            background: linear-gradient(135deg, #FEFCFB, #1282A2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .role-selection {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .role-option {
+            flex: 1;
+            margin: 0 10px;
+            cursor: pointer;
+            text-align: center;
+            padding: 20px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            transition: border-color 0.3s ease;
+        }
+
+        .role-option:hover {
+            border-color: var(--accent-glow);
+        }
+
+        .role-option img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+
+        .role-option i {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .continue-button {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-glow));
+            color: var(--text-color);
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .continue-button:hover {
+            box-shadow: 0 0 20px rgba(18, 130, 162, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.collapsed {
+                transform: translateX(0);
+                width: var(--sidebar-collapsed-width);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .footer {
+                margin-left: 0;
+                width: 100% !important;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .spline-viewer {
+                width: 100%;
+                opacity: 0.3;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">TalentShield</div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <nav>
+            <a href="{% url 'talentShield' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="login.html" class="nav-item">
+                <i class="fas fa-sign-in-alt"></i>
+                <span class="nav-text">Login</span>
+            </a>
+            <a href="signup.html" class="nav-item">
+                <i class="fas fa-user-plus"></i>
+                <span class="nav-text">Sign Up</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="role-selection-container" id="roleSelectionContainer">
+            <h1>Select Your Role</h1>
+            <div class="role-selection">
+                <div class="role-option" id="candidateOption">
+                    <i class="fas fa-user"></i>
+                    <label>
+                        <input type="radio" name="role" value="candidate" checked>
+                        Candidate
+                    </label>
+                </div>
+                <div class="role-option" id="hrManagerOption">
+                    <i class="fas fa-user-tie"></i>
+                    <label>
+                        <input type="radio" name="role" value="hr-manager">
+                        HR Manager
+                    </label>
+                </div>
+            </div>
+            <button class="continue-button" id="continueButton">Continue</button>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('expanded');
+        }
+
+        document.getElementById('continueButton').addEventListener('click', function() {
+            const selectedRole = document.querySelector('input[name="role"]:checked').value;
+            localStorage.setItem('userRole', selectedRole);
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>
